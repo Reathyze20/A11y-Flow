@@ -9,10 +9,17 @@ const puppeteer = require(process.env.AWS_LAMBDA_FUNCTION_NAME ? 'puppeteer-core
 const chromium = process.env.AWS_LAMBDA_FUNCTION_NAME ? require('@sparticuz/chromium') : null;
 
 // DTO pro výsledek (Clean Code: Data Structures)
+export interface PageMetadata {
+    title: string | null;
+    description: string | null;
+    fullPageScreenshotBase64: string | null;
+}
+
 export interface AuditResult {
     url: string;
     timestamp: string;
     violations: Result[];
+    metadata: PageMetadata;
 }
 
 export class WebScanner {
@@ -32,8 +39,9 @@ export class WebScanner {
             browser = await this.launchBrowser();
             const page = await this.setupPage(browser);
             const violations = await this.analyzeAccessibility(page);
-            
-            return this.constructResult(violations);
+            const metadata = await this.extractMetadata(page);
+
+            return this.constructResult(violations, metadata);
         } catch (error: any) {
             throw new Error(`A11yFlow Scan Failed for ${this.url}: ${error.message}`);
         } finally {
@@ -76,11 +84,36 @@ export class WebScanner {
         return results.violations;
     }
 
-    private constructResult(violations: Result[]): AuditResult {
+    private async extractMetadata(page: Page): Promise<PageMetadata> {
+        const title = await page.title().catch(() => null);
+
+        const description = await page
+            .$eval('head meta[name="description"]', (element: any) => {
+                return element.getAttribute('content');
+            })
+            .catch(() => null);
+
+        const screenshotBuffer = await page
+            .screenshot({ fullPage: true, type: 'png' })
+            .catch(() => null as Buffer | null);
+
+        const fullPageScreenshotBase64 = screenshotBuffer
+            ? screenshotBuffer.toString('base64')
+            : null;
+
+        return {
+            title,
+            description,
+            fullPageScreenshotBase64,
+        };
+    }
+
+    private constructResult(violations: Result[], metadata: PageMetadata): AuditResult {
         return {
             url: this.url,
             timestamp: new Date().toISOString(),
-            violations: violations
+            violations: violations,
+            metadata,
         };
     }
 }
