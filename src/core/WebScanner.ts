@@ -1,119 +1,81 @@
-// src/core/WebScanner.ts
-import { Browser, Page } from 'puppeteer-core';
-import { AxePuppeteer } from '@axe-core/puppeteer';
-import { Result } from 'axe-core';
+import puppeteer, { Browser, Page } from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+import { AuditReport } from './types';
+import { ViolationMapper } from './ViolationMapper';
 
-// Flexibilní importy pro různé prostředí
-// Puppeteer pro lokální vývoj, Core+Chromium pro AWS
-const puppeteer = require(process.env.AWS_LAMBDA_FUNCTION_NAME ? 'puppeteer-core' : 'puppeteer');
-const chromium = process.env.AWS_LAMBDA_FUNCTION_NAME ? require('@sparticuz/chromium') : null;
-
-// DTO pro výsledek (Clean Code: Data Structures)
-export interface PageMetadata {
-    title: string | null;
-    description: string | null;
-    fullPageScreenshotBase64: string | null;
-}
-
-export interface AuditResult {
-    url: string;
-    timestamp: string;
-    violations: Result[];
-    metadata: PageMetadata;
-}
+// Workaround pro Axe-puppeteer v ESM - používáme CommonJS require
+// Jest i Node runtime (CommonJS bundle) mají require k dispozici.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { AxePuppeteer } = require('@axe-core/puppeteer');
 
 export class WebScanner {
-    private readonly url: string;
+  private browser: Browser | null = null;
 
-    constructor(url: string) {
-        this.url = url;
+  /**
+   * Provede scan stránky a vrátí strukturovaný AuditReport.
+   */
+  public async scan(url: string): Promise<AuditReport> {
+    let page: Page | null = null;
+
+    try {
+      await this.initBrowser();
+
+      if (!this.browser) {
+        throw new Error('Failed to initialize browser instance.');
+      }
+
+      page = await this.browser.newPage();
+      
+      // Nastavení User-Agenta pro identifikaci bota
+      await page.setUserAgent('A11yFlow-Bot/1.0 (Compliance Audit; +https://a11yflow.com)');
+
+      // Viewport pro desktop audit
+      await page.setViewport({ width: 1280, height: 800 });
+
+      // Navigace s robustním timeoutem
+      await page.goto(url, { 
+        waitUntil: 'networkidle0', 
+        timeout: 30000 
+      });
+
+      // Spuštění Axe-core analýzy
+      // Cílíme na standardy vyžadované EAA 2025 (WCAG 2.1 AA)
+      const results = await new AxePuppeteer(page)
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+
+      // Transformace dat na čistý report
+      const report = ViolationMapper.mapToReport(url, results);
+
+      return report;
+
+    } catch (error) {
+      console.error(`Scanner Error processing ${url}:`, error);
+      throw error;
+    } finally {
+      // Cleanup resources - kritické pro AWS Lambda
+      if (page) await page.close();
+      if (this.browser) await this.browser.close();
     }
+  }
 
-    /**
-     * Hlavní metoda orchestrace auditu.
-     * Dodržuje "Step-down rule" - čteme odshora dolů.
-     */
-    public async scan(): Promise<AuditResult> {
-        let browser: Browser | null = null;
-        try {
-            browser = await this.launchBrowser();
-            const page = await this.setupPage(browser);
-            const violations = await this.analyzeAccessibility(page);
-            const metadata = await this.extractMetadata(page);
+  private async initBrowser(): Promise<void> {
+    const isLambda = process.env.AWS_LAMBDA_FUNCTION_VERSION !== undefined;
 
-            return this.constructResult(violations, metadata);
-        } catch (error: any) {
-            throw new Error(`A11yFlow Scan Failed for ${this.url}: ${error.message}`);
-        } finally {
-            if (browser) await browser.close();
+    const launchOptions = isLambda
+      ? {
+          args: chromium.args,
+          defaultViewport: (chromium as any).defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: (chromium as any).headless,
+          ignoreHTTPSErrors: true,
         }
-    }
-
-    // --- Private Implementation Details ---
-
-    private async launchBrowser(): Promise<Browser> {
-        const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
-
-        if (isLambda) {
-            return await puppeteer.launch({
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath(),
-                headless: chromium.headless,
-            });
-        } else {
-            // Lokální konfigurace (Localhost)
-            return await puppeteer.launch({
-                headless: "new", // Moderní headless mód
-                args: ['--no-sandbox']
-            });
-        }
-    }
-
-    private async setupPage(browser: Browser): Promise<Page> {
-        const page = await browser.newPage();
-        // Networkidle0 zajistí, že se načte i JS (Single Page Apps)
-        await page.goto(this.url, { waitUntil: 'networkidle0' });
-        return page;
-    }
-
-    private async analyzeAccessibility(page: Page): Promise<Result[]> {
-        const results = await new AxePuppeteer(page)
-            .withTags(['wcag21aa', 'wcag2aa']) // Cílíme na standard WCAG 2.1 AA
-            .analyze();
-        return results.violations;
-    }
-
-    private async extractMetadata(page: Page): Promise<PageMetadata> {
-        const title = await page.title().catch(() => null);
-
-        const description = await page
-            .$eval('head meta[name="description"]', (element: any) => {
-                return element.getAttribute('content');
-            })
-            .catch(() => null);
-
-        const screenshotBuffer = await page
-            .screenshot({ fullPage: true, type: 'png' })
-            .catch(() => null as Buffer | null);
-
-        const fullPageScreenshotBase64 = screenshotBuffer
-            ? screenshotBuffer.toString('base64')
-            : null;
-
-        return {
-            title,
-            description,
-            fullPageScreenshotBase64,
+      : {
+          channel: 'chrome',
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
         };
-    }
 
-    private constructResult(violations: Result[], metadata: PageMetadata): AuditResult {
-        return {
-            url: this.url,
-            timestamp: new Date().toISOString(),
-            violations: violations,
-            metadata,
-        };
-    }
+    this.browser = await puppeteer.launch(launchOptions as any);
+  }
 }
