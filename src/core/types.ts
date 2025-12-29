@@ -8,8 +8,9 @@ export type ImpactLevel = 'minor' | 'moderate' | 'serious' | 'critical';
 // Reprezentuje jeden konkrétní výskyt chyby v HTML
 export interface ViolationNode {
   html: string;       // HTML snippet
-  target: string[];   // CSS selektor
+  target: string[];   // CSS selektor (pole pro podporu Shadow DOM)
   failureSummary: string; // Proč to selhalo
+  screenshotUrl?: string; // NOVÉ: URL na vizuální důkaz chyby (S3)
 }
 
 // Agregovaný typ chyby (např. "Chybí alt text u obrázků")

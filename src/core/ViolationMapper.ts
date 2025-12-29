@@ -46,7 +46,7 @@ export class ViolationMapper {
       impact: v.impact as ImpactLevel,
       helpUrl: v.helpUrl,
       count: v.nodes.length,
-      nodes: v.nodes.map((n): ViolationNode => ({
+      nodes: v.nodes.map((n: any): ViolationNode => ({
         html: n.html,
         target: n.target,
         failureSummary: n.failureSummary || 'No summary available'
