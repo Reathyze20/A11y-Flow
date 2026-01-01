@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>A11yFlow – Automated Accessibility Audit Report</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; background: #f5f5f7; color: #222; }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { color: #555; margin-bottom: 1.5rem; }
+    .summary { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; gap: 32px; align-items: flex-start; }
+    .summary-column { display: flex; flex-wrap: wrap; gap: 16px; }
+    .summary-column-left { flex: 2; }
+    .summary-column-right { flex: 1; justify-content: flex-end; }
+    .summary-item { margin-right: 24px; margin-bottom: 8px; }
+    .summary-item.summary-status { border-right: 1px solid #eee; padding-right: 24px; margin-right: 24px; }
+    .summary-label { font-size: 12px; text-transform: uppercase; color: #777; }
+    .summary-value { font-size: 18px; font-weight: 600; }
+    .summary-value.metric-good { color: #2e7d32; }
+    .summary-value.metric-ok { color: #f9a825; }
+    .summary-value.metric-bad { color: #c62828; }
+    .summary-value.status-good { color: #2e7d32; }
+    .summary-value.status-warn { color: #f9a825; }
+    .summary-value.status-bad { color: #c62828; }
+    .trend-summary.trend-good .summary-value { color: #2e7d32; }
+    .trend-summary.trend-bad .summary-value { color: #c62828; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; align-items: center; }
+    .filters label { font-size: 13px; color: #444; }
+    .filters select, .filters input[type="search"] { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    thead { background: #f0f0f3; }
+    th, td { padding: 8px 10px; font-size: 13px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
+    th { font-weight: 600; color: #444; white-space: nowrap; }
+    tr:nth-child(even) td { background: #fafafa; }
+    tr:hover td { background: #f3f7ff; }
+
+    .priority { font-weight: 600; }
+    .priority-critical { color: #d32f2f; }
+    .priority-high { color: #ef6c00; }
+    .priority-medium { color: #f9a825; }
+    .priority-low { color: #1976d2; }
+
+    .pill { display: inline-block; padding: 2px 6px; border-radius: 999px; background: #eef2ff; font-size: 11px; color: #3949ab; }
+
+    .muted { color: #777; font-size: 12px; }
+    a { color: #1565c0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .quick-wins { margin: 4px 0 20px 0; }
+    .quick-wins h2 { margin: 0 0 4px 0; font-size: 18px; }
+    .quick-wins ul { margin: 4px 0 0 18px; padding: 0; }
+    .quick-wins li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h1>A11yFlow – Automated Accessibility Audit Report</h1>
+  <div class="subtitle">Shrnutí automatického auditu pro https://www.tesena.com/</div>
+
+  <div class="summary">
+    
+    <div class="summary-column summary-column-left">
+      
+    <div class="summary-item summary-status">
+      <div class="summary-label">Stav webu</div>
+      <div class="summary-value status-bad">Rizikový stav</div>
+      <div class="muted">Web má vážnější přístupnostní problémy, které mohou ovlivňovat uživatele i právní shodu.</div>
+      <div class="muted">Skóre: 77 / 100 · Chyb: 9 · Kritické: 1</div>
+    </div>
+      
+    <div class="summary-item">
+      <div class="summary-label">WCAG úrovně</div>
+      <div class="summary-value">
+        A: 3 · AA: 1 · AAA: 0
+      </div>
+      <div class="muted">Nejčastější kritéria: 1.3.1 (1×), 4.1.2 (1×), 2.4.1 (1×)</div>
+    </div>
+      
+    <div class="summary-item">
+      <div class="summary-label">ACT pravidla (top)</div>
+      <div class="summary-value">1</div>
+      <div class="muted">Nejčastější ACT pravidla: <a href="https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/" target="_blank" rel="noopener noreferrer">b4f0c3</a> (1×)</div>
+    </div>
+      <div class="summary-item">
+        <div class="summary-label">URL</div>
+        <div class="summary-value">https://www.tesena.com/</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Skóre</div>
+        <div class="summary-value">77 / 100</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Celkem chyb</div>
+        <div class="summary-value">9</div>
+      </div>
+      
+    <div class="summary-item trend-summary ">
+      <div class="summary-label">Trend oproti poslednímu běhu</div>
+      <div class="summary-value">Skóre: 77 → 77 (+0) · Chyb: 9 → 9 (+0) · Kritických: 1 → 1 (+0)</div>
+      
+    </div>
+    </div>
+    <div class="summary-column summary-column-right">
+      
+    <div class="summary-item">
+      <div class="summary-label">LCP</div>
+      <div class="summary-value metric-ok">2504 ms</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">CLS</div>
+      <div class="summary-value metric-good">0.095</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">INP</div>
+      <div class="summary-value metric-bad">696 ms</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">TBT</div>
+      <div class="summary-value metric-good">51 ms</div>
+    </div>
+      
+    <div class="summary-item">
+      <div class="summary-label">Klávesnicová navigace</div>
+      <div class="summary-value">3 problémů (Tab kroky: 60)</div>
+      <div class="muted">Focus loop / past: 1 · Bez viditelného focusu: 2</div>
+    </div>
+    </div>
+    
+  </div>
+
+  
+    <div class="quick-wins">
+      <h2>Rychlé výhry – doporučené první kroky</h2>
+      <p class="muted">Problémy s vysokým dopadem na uživatele, které často stačí opravit na jednotkách prvků.</p>
+      <ul>
+        <li>
+        <strong>Prvek s ARIA rolí očekává konkrétní potomky, ale v DOMu chybí (např. list bez &lt;li&gt;, tablist bez tabů).</strong>
+         – <a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a>
+        <span class="muted"> · Selector: .blog_list</span>
+        <span class="muted"> (🔴 Kritická · 1× · <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">1.3.1</a>)</span>
+      </li><li>
+        <strong>Interaktivní vstupní prvek má roli/typ, ale chybí mu srozumitelný název (accessible name).</strong>
+         – <a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a>
+        <span class="muted"> · Selector: .blog_list</span>
+        <span class="muted"> (🟠 Vysoká · 1× · <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">4.1.2</a>)</span>
+      </li><li>
+        <strong>Uživatelé klávesnice musejí při každém načtení stránky projít celou hlavičku a menu – chybí odkaz „Přeskočit na obsah“. </strong>
+         – <a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a>
+        <span class="muted"> · Selector: body</span>
+        <span class="muted"> (🟠 Vysoká · 1× · <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.4.1</a>)</span>
+      </li><li>
+        <strong>Nízký kontrast mezi textem a pozadím.</strong>
+         – <a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a>
+        <span class="muted"> · Selector: .left</span>
+        <span class="muted"> (🟠 Vysoká · 1× · <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">1.4.3</a>)</span>
+      </li><li>
+        <strong>Klikací cíl (tlačítko, odkaz, ikona) je příliš malý nebo má nedostatečný „hit area“ pro pohodlné ovládání.</strong>
+         – <a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a>
+        <span class="muted"> · Selector: .icon[type=&quot;button&quot;]</span>
+        <span class="muted"> (🟠 Vysoká · 1× · <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.5.8</a>)</span>
+      </li>
+      </ul>
+    </div>
+
+  <div class="filters">
+    <label>
+      Priorita:
+      <select id="priorityFilter">
+        <option value="">Vše</option>
+        <option value="🔴 Kritická">🔴 Kritická</option><option value="🟠 Vysoká">🟠 Vysoká</option>
+      </select>
+    </label>
+    <label>
+      Kategorie:
+      <select id="categoryFilter">
+        <option value="">Vše</option>
+        <option value="Formuláře">Formuláře</option><option value="Grafika">Grafika</option><option value="Navigace">Navigace</option><option value="Technické">Technické</option>
+      </select>
+    </label>
+    <label>
+      Hledat:
+      <input id="searchInput" type="search" placeholder="text problému / opravy / URL" />
+    </label>
+    <span class="muted">Unikátních problémů: 6</span>
+  </div>
+
+  <table id="issuesTable">
+    <thead>
+      <tr>
+        <th>Výskytů</th>
+        <th>Priorita</th>
+        <th>Kategorie</th>
+        <th>Co je špatně</th>
+        <th>Jak opravit</th>
+        <th>Stránka</th>
+        <th>Element</th>
+        <th>Selector</th>
+        <th>Pravidlo</th>
+        <th>WCAG</th>
+        <th>ACT Rule</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-priority="🔴 Kritická" data-category="Technické">
+          <td>1</td>
+          <td class="priority priority-critical">🔴 Kritická</td>
+          <td><span class="pill">Technické</span></td>
+          <td>Prvek s ARIA rolí očekává konkrétní potomky, ale v DOMu chybí (např. list bez &lt;li&gt;, tablist bez tabů).<div class="muted">Fix any of the following:
+  Element has children which are not allowed: button[tabindex], div[aria-hidden]</div></td>
+          <td>Zkontrolujte dokumentaci k dané ARIA roli a doplňte požadované potomky – například u role=&quot;list&quot; použijte role=&quot;listitem&quot; pro položky, u role=&quot;tablist&quot; doplňte role=&quot;tab&quot;.</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>.blog_list</td>
+          <td>.blog_list</td>
+          <td class="muted">aria-required-children</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">1.3.1</a></td>
+          <td class="muted"></td>
+        </tr><tr data-priority="🟠 Vysoká" data-category="Formuláře">
+          <td>1</td>
+          <td class="priority priority-high">🟠 Vysoká</td>
+          <td><span class="pill">Formuláře</span></td>
+          <td>Interaktivní vstupní prvek má roli/typ, ale chybí mu srozumitelný název (accessible name).<div class="muted">Fix any of the following:
+  aria-label attribute does not exist or is empty
+  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty
+  Element has no title attribute</div></td>
+          <td>Doplňte popisek pomocí &lt;label for=&quot;...&quot;&gt;, aria-label nebo aria-labelledby tak, aby čtečka obrazovky oznamovala smysluplný název pole.</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>.blog_list</td>
+          <td>.blog_list</td>
+          <td class="muted">aria-input-field-name</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">4.1.2</a></td>
+          <td class="muted"></td>
+        </tr><tr data-priority="🟠 Vysoká" data-category="Navigace">
+          <td>1</td>
+          <td class="priority priority-high">🟠 Vysoká</td>
+          <td><span class="pill">Navigace</span></td>
+          <td>Uživatelé klávesnice musejí při každém načtení stránky projít celou hlavičku a menu – chybí odkaz „Přeskočit na obsah“. </td>
+          <td>Implementujte viditelný „skip link“, který se objeví při focusu a při aktivaci přesune focus na hlavní obsah (např. role=&quot;main&quot;).</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Stránka (chybí odkaz „Přeskočit na obsah“)</td>
+          <td>body</td>
+          <td class="muted">a11yflow-skip-link</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.4.1</a></td>
+          <td class="muted"></td>
+        </tr><tr data-priority="🟠 Vysoká" data-category="Grafika">
+          <td>1</td>
+          <td class="priority priority-high">🟠 Vysoká</td>
+          <td><span class="pill">Grafika</span></td>
+          <td>Nízký kontrast mezi textem a pozadím.<div class="muted">Fix any of the following:
+  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1</div></td>
+          <td>Zvyšte kontrast mezi textem a pozadím. Pro běžný text musí být poměr alespoň 4.5:1. Zkuste ztmavit barvu písma nebo zesvětlit pozadí.</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Prvek &quot;Všechna práva vyhrazena 2026 tesena s.r.o.&quot;</td>
+          <td>.left</td>
+          <td class="muted">color-contrast</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">1.4.3</a></td>
+          <td class="muted"></td>
+        </tr><tr data-priority="🟠 Vysoká" data-category="Grafika">
+          <td>1</td>
+          <td class="priority priority-high">🟠 Vysoká</td>
+          <td><span class="pill">Grafika</span></td>
+          <td>Klikací cíl (tlačítko, odkaz, ikona) je příliš malý nebo má nedostatečný „hit area“ pro pohodlné ovládání.<div class="muted">Fix any of the following:
+  Target has insufficient size (14px by 14px, should be at least 24px by 24px)
+  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 0px instead of at least 24px.</div></td>
+          <td>Zvyšte velikost klikacích prvků alespoň na doporučených 24×24 CSS pixelů nebo rozšiřte klikací oblast tak, aby jej bylo možné snadno aktivovat i na dotykových displejích.</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Tlačítko &quot;Zobrazit submenu pro Jazykové mutace&quot;</td>
+          <td>.icon[type=&quot;button&quot;]</td>
+          <td class="muted">target-size</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.5.8</a></td>
+          <td class="muted"></td>
+        </tr><tr data-priority="🟠 Vysoká" data-category="Navigace">
+          <td>1</td>
+          <td class="priority priority-high">🟠 Vysoká</td>
+          <td><span class="pill">Navigace</span></td>
+          <td>Při ovládání stránky z klávesnice (Tab/Shift+Tab) může fokus uvíznout v pasti nebo se zcela ztratit.</td>
+          <td>Uspořádejte fokusovatelné prvky tak, aby šel fokus lineárně dopředu i zpět bez cyklení. U modálních oken zajistěte, aby šlo fokus vrátit zpět na předchozí prvek a aby se uživatel dostal z popupu bez použití myši.</td>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>button.icon.font_size</td>
+          <td>button.icon.font_size</td>
+          <td class="muted">a11yflow-focus-trap</td>
+          <td class="muted"><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.1.2</a></td>
+          <td class="muted"><a href="https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/" target="_blank" rel="noopener noreferrer">b4f0c3</a></td>
+        </tr>
+    </tbody>
+  </table>
+
+  
+  <h2 style="margin-top:32px; margin-bottom:8px;">Klávesnicová navigace – detailní analýza</h2>
+  <p class="muted" style="margin-bottom:12px;">Každý řádek představuje konkrétní problém zjištěný při průchodu stránky klávesou Tab.</p>
+  <table id="keyboardTable">
+    <thead>
+      <tr>
+        <th>Stránka</th>
+        <th>Typ problému</th>
+        <th>Proč je to problém</th>
+        <th>Selector</th>
+        <th>WCAG</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Bez viditelného focusu</td>
+          <td>Fokusovaný prvek nemá zřetelný focus styl (outline). Uživatel klávesnice nevidí, kde se právě nachází, a nevidomý zákazník se čtečkou obrazovky může mít problém pochopit, co je aktuálně aktivní.</td>
+          <td>a</td>
+          <td><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.4.7</a></td>
+        </tr><tr>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Bez viditelného focusu</td>
+          <td>Fokusovaný prvek nemá zřetelný focus styl (outline). Uživatel klávesnice nevidí, kde se právě nachází, a nevidomý zákazník se čtečkou obrazovky může mít problém pochopit, co je aktuálně aktivní.</td>
+          <td>a</td>
+          <td><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.4.7</a></td>
+        </tr><tr>
+          <td><a href="https://www.tesena.com/" target="_blank" rel="noopener noreferrer">https://www.tesena.com/</a></td>
+          <td>Focus loop / past</td>
+          <td>Zdá se, že se fokus rychle cyklí mezi několika prvky. To může znamenat klávesnicovou past, ze které se uživatel klávesnice i nevidomý zákazník se čtečkou obrazovky obtížně dostává.</td>
+          <td>a</td>
+          <td><a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" rel="noopener noreferrer">2.1.2</a></td>
+        </tr>
+    </tbody>
+  </table>
+  
+
+  <script>
+    function applyFilters() {
+      var pri = document.getElementById('priorityFilter').value;
+      var cat = document.getElementById('categoryFilter').value;
+      var search = document.getElementById('searchInput').value.toLowerCase();
+
+      var rows = document.querySelectorAll('#issuesTable tbody tr');
+      rows.forEach(function(row) {
+        var matchesPri = !pri || row.getAttribute('data-priority') === pri;
+        var matchesCat = !cat || row.getAttribute('data-category') === cat;
+        var text = row.textContent.toLowerCase();
+        var matchesSearch = !search || text.indexOf(search) !== -1;
+
+        row.style.display = (matchesPri && matchesCat && matchesSearch) ? '' : 'none';
+      });
+    }
+
+    document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+    document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+  </script>
+</body>
+</html>

@@ -23,9 +23,16 @@ esbuild.build({
   outfile: path.join(__dirname, '../../dist/index.js'),
   
   // Externí moduly, které nechceme bundlovat (buď jsou v layeru, nebo je to AWS SDK)
-  // '@sparticuz/chromium' často dělá problémy při bundlingu, někdy je lepší ho mít v externím layeru,
-  // ale pro jednoduchost ho zkusíme zabalit. Pokud by to dělalo problémy, přidáme ho sem.
-  external: ['@aws-sdk/client-s3'], 
+  // DŮLEŽITÉ: '@sparticuz/chromium' a 'puppeteer-core' musí zůstat jako runtime
+  // závislosti v `node_modules`, jinak `chromium.executablePath()` vrací `undefined`
+  // a Lambda padá s chybou "The \"path\" argument must be of type string...".
+  external: [
+    '@aws-sdk/client-s3',
+    '@sparticuz/chromium',
+    'puppeteer-core',
+    '@axe-core/puppeteer',
+    'axe-core',
+  ], 
 }).then(() => {
   console.log('✅ Build successful: dist/index.js');
 }).catch(() => {

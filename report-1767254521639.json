@@ -1,0 +1,394 @@
+{
+  "url": "https://www.tesena.com/",
+  "timestamp": "2026-01-01T08:01:52.008Z",
+  "score": 77,
+  "meta": {
+    "browserVersion": "axe-core 4.11.0",
+    "engineVersion": "4.11.0"
+  },
+  "violations": {
+    "critical": [
+      {
+        "id": "aria-required-children",
+        "title": "Certain ARIA roles must contain particular children",
+        "description": "Ensure elements with an ARIA role that require child roles contain them",
+        "impact": "critical",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/aria-required-children?application=axe-puppeteer",
+        "count": 1,
+        "suggestedFix": "Zkontrolujte dokumentaci k dané ARIA roli a doplňte požadované potomky – například u role=\"list\" použijte role=\"listitem\" pro položky, u role=\"tablist\" doplňte role=\"tab\".",
+        "nodes": [
+          {
+            "html": "<div class=\"blog_list blog_list_slider owl-carousel rdy owl-loaded owl-drag\" role=\"listbox\" tabindex=\"0\" data-owl-access-keyup=\"1\" data-owl-carousel-focusable=\"1\" data-number=\"1 / 5\">",
+            "target": [
+              ".blog_list"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has children which are not allowed: button[tabindex], div[aria-hidden]",
+            "cssSelector": ".blog_list",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/a405a33a-364e-4345-988f-cfc2fc7c96ae.jpg"
+          }
+        ]
+      }
+    ],
+    "serious": [
+      {
+        "id": "aria-input-field-name",
+        "title": "ARIA input fields must have an accessible name",
+        "description": "Ensure every ARIA input field has an accessible name",
+        "impact": "serious",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/aria-input-field-name?application=axe-puppeteer",
+        "count": 1,
+        "suggestedFix": "Doplňte popisek pomocí <label for=\"...\">, aria-label nebo aria-labelledby tak, aby čtečka obrazovky oznamovala smysluplný název pole.",
+        "nodes": [
+          {
+            "html": "<div class=\"blog_list blog_list_slider owl-carousel rdy owl-loaded owl-drag\" role=\"listbox\" tabindex=\"0\" data-owl-access-keyup=\"1\" data-owl-carousel-focusable=\"1\" data-number=\"1 / 5\">",
+            "target": [
+              ".blog_list"
+            ],
+            "failureSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+            "cssSelector": ".blog_list",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/fcd784e5-3329-405f-aca4-8356cd674ebe.jpg"
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "title": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "impact": "serious",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=axe-puppeteer",
+        "count": 4,
+        "suggestedFix": "Zvyšte kontrast mezi textem a pozadím. Pro běžný text musí být poměr alespoň 4.5:1. Zkuste ztmavit barvu písma nebo zesvětlit pozadí.",
+        "nodes": [
+          {
+            "html": "<p class=\"left\">Všechna práva vyhrazena 2026 <strong>tesena s.r.o.</strong></p>",
+            "target": [
+              ".sign > .left"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "cssSelector": ".left",
+            "elementLabel": "Prvek \"Všechna práva vyhrazena 2026 tesena s.r.o.\"",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/bba52dae-4663-403a-9203-383fdde942d0.jpg"
+          },
+          {
+            "html": "<strong>tesena s.r.o.</strong>",
+            "target": [
+              ".left > strong"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "cssSelector": ".left",
+            "elementLabel": "Prvek \"tesena s.r.o.\""
+          },
+          {
+            "html": "<p class=\"right\">Created by: <a href=\"https://www.teschner.cz/\" target=\"_blank\" rel=\"noopener\" title=\"Teschner group s.r.o.\">Teschner<sup>Ⓡ</sup> group s.r.o.</a></p>",
+            "target": [
+              ".sign > .right"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "cssSelector": ".right",
+            "elementLabel": "Prvek \"Created by: Teschner Ⓡ group s.r.o.\""
+          },
+          {
+            "html": "<a href=\"https://www.teschner.cz/\" target=\"_blank\" rel=\"noopener\" title=\"Teschner group s.r.o.\">Teschner<sup>Ⓡ</sup> group s.r.o.</a>",
+            "target": [
+              "a[href$=\"teschner.cz/\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "cssSelector": "a[href$=\"teschner.cz/\"]",
+            "elementLabel": "Odkaz \"Teschner group s.r.o.\""
+          }
+        ]
+      },
+      {
+        "id": "target-size",
+        "title": "All touch targets must be 24px large, or leave sufficient space",
+        "description": "Ensure touch targets have sufficient size and space",
+        "impact": "serious",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/target-size?application=axe-puppeteer",
+        "count": 1,
+        "suggestedFix": "Zvyšte velikost klikacích prvků alespoň na doporučených 24×24 CSS pixelů nebo rozšiřte klikací oblast tak, aby jej bylo možné snadno aktivovat i na dotykových displejích.",
+        "nodes": [
+          {
+            "html": "<button type=\"button\" aria-expanded=\"false\" class=\"icon font_size\">Zobrazit submenu pro Jazykové mutace</button>",
+            "target": [
+              ".lang > .icon[type=\"button\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Target has insufficient size (14px by 14px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 0px instead of at least 24px.",
+            "cssSelector": ".icon[type=\"button\"]",
+            "elementLabel": "Tlačítko \"Zobrazit submenu pro Jazykové mutace\"",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/f46e2b5a-2179-410a-84b7-7c8ffacb48b7.jpg"
+          }
+        ]
+      },
+      {
+        "id": "a11yflow-focus-trap",
+        "title": "Klávesnicová past (focus se zacyklí nebo ztratí)",
+        "description": "Při procházení stránky klávesou Tab se fokus zacyklí mezi několika prvky nebo se úplně ztratí. Uživatel klávesnice ani nevidomý zákazník se čtečkou obrazovky se z pasti nedostanou bez použití myši.",
+        "impact": "serious",
+        "helpUrl": "https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/",
+        "count": 1,
+        "suggestedFix": "Zkontrolujte pořadí focusu, tabindex a chování modálních oken. Ujistěte se, že fokus nemůže uvíznout v omezené oblasti a že se po zavření modalu vrátí na logický prvek.",
+        "actRuleIds": [
+          "b4f0c3"
+        ],
+        "actRuleUrls": [
+          "https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/"
+        ],
+        "nodes": [
+          {
+            "html": "<button type=\"button\" aria-expanded=\"false\" class=\"icon font_size \">Zobrazit submenu pro Potkejme se</button>",
+            "target": [
+              "button.icon.font_size"
+            ],
+            "failureSummary": "Fokus se během simulace klávesnice zacyklil nebo ztratil, což je v rozporu s požadavkem, aby stránka byla plně ovladatelná z klávesnice.",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/71831fc8-95a5-4de7-9271-04a54b477497.jpg"
+          }
+        ]
+      },
+      {
+        "id": "a11yflow-skip-link",
+        "title": "Chybějící odkaz „Přeskočit na obsah“",
+        "description": "Stránka nenabízí nebo správně neimplementuje odkaz/tlačítko pro přeskočení opakující se navigace a přechod k hlavnímu obsahu.",
+        "impact": "serious",
+        "helpUrl": "https://www.w3.org/WAI/standards-guidelines/act/rules/act-skip-link-placeholder/",
+        "count": 1,
+        "suggestedFix": "Přidejte nebo opravte odkaz „Přeskočit na hlavní obsah“, který je fokusovatelný z klávesnice a při aktivaci přesune focus na hlavní obsah (např. role=\"main\").",
+        "actRuleIds": [
+          "act-skip-link-placeholder"
+        ],
+        "actRuleUrls": [
+          "https://www.w3.org/WAI/standards-guidelines/act/rules/act-skip-link-placeholder/"
+        ],
+        "nodes": [
+          {
+            "html": "<body class=\"hp cs \">\n\n\n\n\n\n\n\n\n\n    <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-MW2KMFQ\" class=\"visible_hidden\"></iframe></noscript>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n    \n\n\n\n        \n\n\n\n        <div class=\"web_container\" aria-hidden=\"false\">\n\n            <header>\n\n\n\n\n                <div class=\"inside_middle no_margin flex relative\">\n                    <a href=\"/\" title=\"Přejít …",
+            "target": [
+              "body"
+            ],
+            "failureSummary": "Stránka neobsahuje žádný odkaz nebo tlačítko, které by umožnilo přeskočit opakující se navigaci na hlavní obsah.",
+            "screenshotUrl": "https://a11yflow-deployment.s3.amazonaws.com/violations/ee11227f-12a6-4476-9ff2-3d029cb42fc7.jpg"
+          }
+        ]
+      }
+    ],
+    "moderate": [],
+    "minor": []
+  },
+  "stats": {
+    "totalViolations": 9,
+    "criticalCount": 1
+  },
+  "humanReadable": {
+    "actionItems": [
+      {
+        "id": "aria-input-field-name",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Formuláře",
+        "what": "Interaktivní vstupní prvek má roli/typ, ale chybí mu srozumitelný název (accessible name).",
+        "fix": "Doplňte popisek pomocí <label for=\"...\">, aria-label nebo aria-labelledby tak, aby čtečka obrazovky oznamovala smysluplný název pole.",
+        "wcagReference": "4.1.2 Název, role, hodnota",
+        "technicalSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".blog_list"
+      },
+      {
+        "id": "aria-required-children",
+        "impact": "critical",
+        "priority": "🔴 Kritická",
+        "category": "Technické",
+        "what": "Prvek s ARIA rolí očekává konkrétní potomky, ale v DOMu chybí (např. list bez <li>, tablist bez tabů).",
+        "fix": "Zkontrolujte dokumentaci k dané ARIA roli a doplňte požadované potomky – například u role=\"list\" použijte role=\"listitem\" pro položky, u role=\"tablist\" doplňte role=\"tab\".",
+        "wcagReference": "1.3.1 Informace a vztahy",
+        "technicalSummary": "Fix any of the following:\n  Element has children which are not allowed: button[tabindex], div[aria-hidden]",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".blog_list"
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Grafika",
+        "what": "Nízký kontrast mezi textem a pozadím.",
+        "fix": "Zvyšte kontrast mezi textem a pozadím. Pro běžný text musí být poměr alespoň 4.5:1. Zkuste ztmavit barvu písma nebo zesvětlit pozadí.",
+        "wcagReference": "1.4.3 Kontrast (minimální)",
+        "technicalSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".left",
+        "elementLabel": "Prvek \"Všechna práva vyhrazena 2026 tesena s.r.o.\""
+      },
+      {
+        "id": "target-size",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Grafika",
+        "what": "Klikací cíl (tlačítko, odkaz, ikona) je příliš malý nebo má nedostatečný „hit area“ pro pohodlné ovládání.",
+        "fix": "Zvyšte velikost klikacích prvků alespoň na doporučených 24×24 CSS pixelů nebo rozšiřte klikací oblast tak, aby jej bylo možné snadno aktivovat i na dotykových displejích.",
+        "wcagReference": "2.5.8 Velikost cíle (minimální)",
+        "technicalSummary": "Fix any of the following:\n  Target has insufficient size (14px by 14px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 0px instead of at least 24px.",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".icon[type=\"button\"]",
+        "elementLabel": "Tlačítko \"Zobrazit submenu pro Jazykové mutace\""
+      },
+      {
+        "id": "a11yflow-focus-trap",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Navigace",
+        "what": "Při ovládání stránky z klávesnice (Tab/Shift+Tab) může fokus uvíznout v pasti nebo se zcela ztratit.",
+        "fix": "Uspořádejte fokusovatelné prvky tak, aby šel fokus lineárně dopředu i zpět bez cyklení. U modálních oken zajistěte, aby šlo fokus vrátit zpět na předchozí prvek a aby se uživatel dostal z popupu bez použití myši.",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": "button.icon.font_size",
+        "wcagReference": "2.1.2 No Keyboard Trap",
+        "actRuleIds": [
+          "b4f0c3"
+        ],
+        "actRuleUrls": [
+          "https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/"
+        ]
+      },
+      {
+        "id": "a11yflow-skip-link",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Navigace",
+        "what": "Uživatelé klávesnice musejí při každém načtení stránky projít celou hlavičku a menu – chybí odkaz „Přeskočit na obsah“. ",
+        "fix": "Implementujte viditelný „skip link“, který se objeví při focusu a při aktivaci přesune focus na hlavní obsah (např. role=\"main\").",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": "body",
+        "elementLabel": "Stránka (chybí odkaz „Přeskočit na obsah“)",
+        "wcagReference": "2.4.1 Bloky přeskočení",
+        "actRuleIds": [
+          "act-skip-link-placeholder"
+        ],
+        "actRuleUrls": [
+          "https://www.w3.org/WAI/standards-guidelines/act/rules/act-skip-link-placeholder/"
+        ]
+      }
+    ],
+    "topIssues": [
+      {
+        "id": "aria-required-children",
+        "impact": "critical",
+        "priority": "🔴 Kritická",
+        "category": "Technické",
+        "what": "Prvek s ARIA rolí očekává konkrétní potomky, ale v DOMu chybí (např. list bez <li>, tablist bez tabů).",
+        "fix": "Zkontrolujte dokumentaci k dané ARIA roli a doplňte požadované potomky – například u role=\"list\" použijte role=\"listitem\" pro položky, u role=\"tablist\" doplňte role=\"tab\".",
+        "wcagReference": "1.3.1 Informace a vztahy",
+        "technicalSummary": "Fix any of the following:\n  Element has children which are not allowed: button[tabindex], div[aria-hidden]",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".blog_list"
+      },
+      {
+        "id": "aria-input-field-name",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Formuláře",
+        "what": "Interaktivní vstupní prvek má roli/typ, ale chybí mu srozumitelný název (accessible name).",
+        "fix": "Doplňte popisek pomocí <label for=\"...\">, aria-label nebo aria-labelledby tak, aby čtečka obrazovky oznamovala smysluplný název pole.",
+        "wcagReference": "4.1.2 Název, role, hodnota",
+        "technicalSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".blog_list"
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "priority": "🟠 Vysoká",
+        "category": "Grafika",
+        "what": "Nízký kontrast mezi textem a pozadím.",
+        "fix": "Zvyšte kontrast mezi textem a pozadím. Pro běžný text musí být poměr alespoň 4.5:1. Zkuste ztmavit barvu písma nebo zesvětlit pozadí.",
+        "wcagReference": "1.4.3 Kontrast (minimální)",
+        "technicalSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.17 (foreground color: #80aac5, background color: #00558b, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "exampleUrl": "https://www.tesena.com/",
+        "exampleTarget": ".left",
+        "elementLabel": "Prvek \"Všechna práva vyhrazena 2026 tesena s.r.o.\""
+      }
+    ]
+  },
+  "performance": {
+    "coreWebVitals": {
+      "lcp": 2360,
+      "cls": 0.09098352227210997,
+      "inp": 664,
+      "tbt": 60
+    },
+    "navigation": {
+      "firstContentfulPaint": 1664,
+      "timeToFirstByte": 1417.7999999999956,
+      "domContentLoaded": 2215.899999999994,
+      "loadEvent": 2674.899999999994
+    }
+  },
+  "keyboardNavigation": {
+    "totalSteps": 60,
+    "issues": [
+      {
+        "type": "no-visible-focus",
+        "step": 2,
+        "selector": "a",
+        "description": "Fokusovaný prvek nemá zřetelný focus styl (outline). Uživatel klávesnice nevidí, kde se právě nachází, a nevidomý zákazník se čtečkou obrazovky může mít problém pochopit, co je aktuálně aktivní.",
+        "wcagReference": "2.4.7 Focus Visible",
+        "recommendation": "Přidej pro fokusovaný stav (např. :focus-visible) jasně viditelný styl – typicky outline s dostatečným kontrastem vůči pozadí. Pomůže to jak uživatelům klávesnice, tak nevidomým zákazníkům sledujícím obsah s asistivní technologií.",
+        "htmlSnippet": "<a href=\"/o-nas/a-1/\" class=\"\" title=\"Přejít na stránku - O nás\" aria-current=\"false\">O nás</a>"
+      },
+      {
+        "type": "no-visible-focus",
+        "step": 4,
+        "selector": "a",
+        "description": "Fokusovaný prvek nemá zřetelný focus styl (outline). Uživatel klávesnice nevidí, kde se právě nachází, a nevidomý zákazník se čtečkou obrazovky může mít problém pochopit, co je aktuálně aktivní.",
+        "wcagReference": "2.4.7 Focus Visible",
+        "recommendation": "Přidej pro fokusovaný stav (např. :focus-visible) jasně viditelný styl – typicky outline s dostatečným kontrastem vůči pozadí. Pomůže to jak uživatelům klávesnice, tak nevidomým zákazníkům sledujícím obsah s asistivní technologií.",
+        "htmlSnippet": "<a href=\"/nabizime/a-2/\" class=\"\" title=\"Přejít na stránku - Nabízíme\" aria-current=\"false\">Nabízíme</a>"
+      },
+      {
+        "type": "focus-loop",
+        "step": 4,
+        "selector": "a",
+        "description": "Zdá se, že se fokus rychle cyklí mezi několika prvky. To může znamenat klávesnicovou past, ze které se uživatel klávesnice i nevidomý zákazník se čtečkou obrazovky obtížně dostává.",
+        "wcagReference": "2.1.2 No Keyboard Trap",
+        "recommendation": "Zkontroluj pořadí focusu (tabindex, pořadí prvků v DOMu) a zajisti, aby se fokus nezacyklil mezi malou skupinou prvků. V případě modálních oken umožni návrat zpět na předchozí prvek, aby se nevidomí uživatelé neocitli v pasti.",
+        "htmlSnippet": "<a href=\"/nabizime/a-2/\" class=\"\" title=\"Přejít na stránku - Nabízíme\" aria-current=\"false\">Nabízíme</a>"
+      }
+    ]
+  },
+  "brokenLinks": {
+    "totalChecked": 40,
+    "broken": [
+      {
+        "url": "https://www.tesena.com/case-study/a-94/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/potkejme-se/webinare/a-75/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/blog/a-4/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/kariera/benefity/a-56/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/kariera/koho-zbavujeme-chyb/a-60/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/cs/",
+        "status": null,
+        "ok": false
+      },
+      {
+        "url": "https://www.tesena.com/#consult_popup",
+        "status": null,
+        "ok": false
+      }
+    ]
+  }
+}

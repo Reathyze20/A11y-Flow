@@ -24,46 +24,65 @@ const colors = {
 
 const log = (msg, color = colors.reset) => console.log(`${color}${msg}${colors.reset}`);
 
+// Helper pro rekurzivní přidávání souborů s Linuxovými právy
+function addDirectoryToZip(zip, rootDir, relativePath = '') {
+  const fullPath = path.join(rootDir, relativePath);
+  const entries = fs.readdirSync(fullPath);
+
+  for (const entry of entries) {
+    const entryPath = path.join(fullPath, entry);
+    const entryRelativePath = relativePath ? path.join(relativePath, entry).replace(/\\/g, '/') : entry;
+    const stat = fs.statSync(entryPath);
+
+    if (stat.isDirectory()) {
+      addDirectoryToZip(zip, rootDir, entryRelativePath);
+    } else {
+      const content = fs.readFileSync(entryPath);
+      // DŮLEŽITÉ: Nastavíme UNIX permissions na 755 (rwxr-xr-x)
+      // To zajistí, že Chromium binary bude spustitelné i po deployi z Windows
+      // Atribut v ZIPu se skládá z práv posunutých o 16 bitů doleva
+      zip.addFile(entryRelativePath, content, '', 0o755 << 16);
+    }
+  }
+}
+
 try {
-  // __dirname = <project-root>/src/scripts
-  // Skutečný root projektu je o dvě úrovně výš
-  const rootDir = path.join(__dirname, '../../');
-  const distDir = path.join(rootDir, 'dist');
-  const zipPath = path.join(rootDir, CONFIG.ZIP_FILE_NAME);
+ const rootDir = path.join(__dirname, '../../');
+ const distDir = path.join(rootDir, 'dist');
+ const zipPath = path.join(rootDir, CONFIG.ZIP_FILE_NAME);
 
   // 1. BUILD
   log("🚀 Starting Deployment...", colors.yellow);
   log("🔨 Building project...", colors.yellow);
   
-  // Smažeme starý dist, ať máme čisto
   if (fs.existsSync(distDir)) {
     fs.rmSync(distDir, { recursive: true, force: true });
   }
   
-  // Spustí build
   execSync('npm run build', { stdio: 'inherit', cwd: rootDir });
 
-  // 2. PREPARE DEPENDENCIES
-  log("📥 Installing production dependencies...", colors.yellow);
+  // 2. PREPARE DEPENDENCIES (LINUX FORCE)
+  log("📥 Installing production dependencies (Forcing Linux/x64)...", colors.yellow);
   
-  // Zkopírujeme package.json do dist, abychom mohli nainstalovat jen produkční deps
-  fs.copyFileSync(path.join(rootDir, 'package.json'), path.join(distDir, 'package.json'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
   
-  // Pokud existuje package-lock, vezmeme ho taky pro konzistenci
-  if (fs.existsSync(path.join(rootDir, 'package-lock.json'))) {
-      fs.copyFileSync(path.join(rootDir, 'package-lock.json'), path.join(distDir, 'package-lock.json'));
+  // Odstraníme AWS SDK
+  if (pkg.dependencies && pkg.dependencies['@aws-sdk/client-s3']) {
+      delete pkg.dependencies['@aws-sdk/client-s3'];
   }
 
-  // Nainstalujeme POUZE dependencies (bez devDependencies jako typescript, esbuild atd.) přímo do dist
-  // Tím zajistíme, že tam bude @sparticuz/chromium i s binárkou
-  execSync('npm install --omit=dev', { stdio: 'inherit', cwd: distDir });
+  fs.writeFileSync(path.join(distDir, 'package.json'), JSON.stringify(pkg, null, 2));
+  
+  // Instalace s --no-bin-links může pomoci na Windows filesystémech
+  execSync('npm install --omit=dev --os=linux --cpu=x64 --no-bin-links', { stdio: 'inherit', cwd: distDir });
 
-  // 3. ZIP
-  log("📦 Zipping artifact (this may take a moment)...", colors.yellow);
+  // 3. ZIP WITH PERMISSIONS
+  log("📦 Zipping artifact with UNIX permissions...", colors.yellow);
   const zip = new AdmZip();
   
-  // Zabalíme celý obsah složky dist (včetně nově vzniklého node_modules)
-  zip.addLocalFolder(distDir);
+  // Použijeme vlastní funkci místo addLocalFolder
+  addDirectoryToZip(zip, distDir);
+  
   zip.writeZip(zipPath);
   log(`   Zip created at: ${zipPath}`, colors.green);
 
@@ -84,7 +103,6 @@ try {
   // 6. CLEANUP
   log("🧹 Cleaning up...", colors.yellow);
   fs.unlinkSync(zipPath);
-  // Volitelně můžeme promazat node_modules v dist, ale není to nutné, příští build to smaže
 
   log("✅ Deployment successful!", colors.green);
 
