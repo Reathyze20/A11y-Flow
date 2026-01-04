@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heading Structure Test Page - Všechny případy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border: 3px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .test-label {
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .test-label.correct {
+            background: #51cf66;
+        }
+        .description {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        h1 { color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 5px; }
+        h2 { color: #00aa00; border-bottom: 1px solid #00aa00; padding-bottom: 5px; }
+        h3 { color: #ff8800; }
+        h4 { color: #9c27b0; }
+        h5 { color: #e91e63; }
+        h6 { color: #607d8b; }
+    </style>
+</head>
+<body>
+
+    <!-- TEST 1: Multiple H1 (Mělo by detekovat) -->
+    <div class="test-section">
+        <span class="test-label">❌ TEST 1: Multiple H1</span>
+        <div class="description">
+            <strong>Očekávaný problém:</strong> "Stránka obsahuje X nadpisů h1. Měl by existovat pouze jeden hlavní nadpis."<br>
+            <strong>Co testujeme:</strong> Detekce více než jednoho H1
+        </div>
+        
+        <h1>První hlavní nadpis</h1>
+        <p>Nějaký obsah pod prvním H1.</p>
+        
+        <h1>Druhý hlavní nadpis (to je špatně!)</h1>
+        <p>Toto by mělo být H2, ne H1.</p>
+        
+        <h1>Třetí hlavní nadpis (ještě horší!)</h1>
+        <p>Další nadbytečný H1.</p>
+    </div>
+
+    <!-- TEST 2: Skipped Level (H1 → H3) -->
+    <div class="test-section">
+        <span class="test-label">❌ TEST 2: Skipped Level - Přeskočení úrovně</span>
+        <div class="description">
+            <strong>Očekávaný problém:</strong> "Přeskočena úroveň nadpisu: z h1 na h3. Nadpisy by měly postupovat sekvenčně (h1 → h2 → h3...)."<br>
+            <strong>Co testujeme:</strong> Přeskočení H2 mezi H1 a H3
+        </div>
+        
+        <h1>Hlavní téma</h1>
+        <h3>Detail (chybí H2!)</h3>
+        <p>Mezi H1 a H3 by měl být H2.</p>
+    </div>
+
+    <!-- TEST 3: Skipped Level (H2 → H4) -->
+    <div class="test-section">
+        <span class="test-label">❌ TEST 3: Skipped Level - Další varianta</span>
+        <div class="description">
+            <strong>Očekávaný problém:</strong> "Přeskočena úroveň nadpisu: z h2 na h4."<br>
+            <strong>Co testujeme:</strong> Přeskočení H3 mezi H2 a H4
+        </div>
+        
+        <h2>Podkapitola</h2>
+        <h4>Detailní bod (chybí H3!)</h4>
+        <p>Mezi H2 a H4 by měl být H3.</p>
+    </div>
+
+    <!-- TEST 4: Empty Headings -->
+    <div class="test-section">
+        <span class="test-label">❌ TEST 4: Empty Headings - Prázdné nadpisy</span>
+        <div class="description">
+            <strong>Očekávaný problém:</strong> "Nalezeno X prázdných nadpisů. Všechny nadpisy by měly obsahovat smysluplný text."<br>
+            <strong>Co testujeme:</strong> Nadpisy bez textu
+        </div>
+        
+        <h2></h2>
+        <p>Tento H2 výše je prázdný!</p>
+        
+        <h3>   </h3>
+        <p>Tento H3 obsahuje jen mezery.</p>
+        
+        <h4></h4>
+        <p>Další prázdný nadpis.</p>
+    </div>
+
+    <!-- TEST 5: H4 → H2 (TO JE OK!) -->
+    <div class="test-section">
+        <span class="test-label correct">✓ TEST 5: H4 → H2 (Návrat nahoru je OK)</span>
+        <div class="description">
+            <strong>Očekávaný výsledek:</strong> ŽÁDNÝ problém! Toto je správně.<br>
+            <strong>Co testujeme:</strong> Návrat z hlubší úrovně na vyšší (konec vnořené sekce)
+        </div>
+        
+        <h2>Sekce A</h2>
+        <h3>Podsekce A1</h3>
+        <h4>Detail A1.1</h4>
+        <p>Hluboká úroveň</p>
+        
+        <h2>Sekce B (návrat z H4 na H2 je OK!)</h2>
+        <p>Začíná nová hlavní sekce.</p>
+    </div>
+
+    <!-- TEST 6: Správná hierarchie (pro kontrolu) -->
+    <div class="test-section">
+        <span class="test-label correct">✓ TEST 6: Správná hierarchie</span>
+        <div class="description">
+            <strong>Očekávaný výsledek:</strong> ŽÁDNÝ problém!<br>
+            <strong>Co testujeme:</strong> Perfektně strukturované nadpisy
+        </div>
+        
+        <h2>Kapitola 1</h2>
+        <h3>Sekce 1.1</h3>
+        <h4>Podsekce 1.1.1</h4>
+        <h5>Detail 1.1.1.1</h5>
+        <h6>Nejnižší úroveň</h6>
+        
+        <h5>Detail 1.1.1.2 (návrat na H5 je OK)</h5>
+        <h4>Podsekce 1.1.2 (návrat na H4 je OK)</h4>
+        <h3>Sekce 1.2 (návrat na H3 je OK)</h3>
+        <h2>Kapitola 2 (návrat na H2 je OK)</h2>
+    </div>
+
+    <!-- TEST 7: Kombinace všech problémů -->
+    <div class="test-section">
+        <span class="test-label">❌ TEST 7: Chaos - Mix všech chyb</span>
+        <div class="description">
+            <strong>Očekávaný problém:</strong> Měl by detekovat multiple H1, skipped levels i empty headings<br>
+            <strong>Co testujeme:</strong> Schopnost detekovat více problémů najednou
+        </div>
+        
+        <h1>Další H1 (už 4. na stránce!)</h1>
+        <h3>Přeskočili jsme H2</h3>
+        <h5>A teď i H4!</h5>
+        <h2></h2>
+        <h6>Sem to taky nepatří</h6>
+    </div>
+
+    <!-- Shrnutí pro test -->
+    <div class="test-section" style="background: #e3f2fd; border-color: #2196f3;">
+        <h2>📋 Očekávané výsledky scanu</h2>
+        <ul>
+            <li><strong>Celkem nadpisů:</strong> ~30+</li>
+            <li><strong>Počet H1:</strong> 4 (mělo by být 1)</li>
+            <li><strong>Multiple H1:</strong> ✓ Mělo by detekovat</li>
+            <li><strong>Skipped levels:</strong> ✓ Mělo by detekovat (minimálně 3 případy)</li>
+            <li><strong>Empty headings:</strong> ✓ Mělo by detekovat (3 prázdné)</li>
+            <li><strong>H4 → H2 přechody:</strong> ✗ Nemělo by hlásit jako chybu</li>
+        </ul>
+    </div>
+
+</body>
+</html>

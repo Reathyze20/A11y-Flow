@@ -1,0 +1,181 @@
+{
+  "image-alt": {
+    "template": "<img src=\"{src}\" alt=\"{alt}\">",
+    "variables": {
+      "src": "Actual image source",
+      "alt": "Descriptive text for the image"
+    },
+    "before": "<img src=\"logo.png\">",
+    "after": "<img src=\"logo.png\" alt=\"Company Logo\">",
+    "explanation": "All <img> elements must have an alt attribute. The alt text should describe the image content or function. For decorative images, use alt=\"\"."
+  },
+  "label": {
+    "template": "<label for=\"{id}\">{label}</label>\n<input type=\"{type}\" id=\"{id}\" name=\"{name}\">",
+    "variables": {
+      "id": "Unique identifier",
+      "label": "Label text",
+      "type": "Input type",
+      "name": "Input name"
+    },
+    "before": "<input type=\"text\" name=\"email\">",
+    "after": "<label for=\"email\">E-mail Address:</label>\n<input type=\"text\" id=\"email\" name=\"email\">",
+    "explanation": "Every form input must have an associated <label>. Use the 'for' attribute on the label to match the 'id' of the input."
+  },
+  "color-contrast": {
+    "template": "color: {foreground};\nbackground: {background}; /* Contrast ratio: {ratio}:1 */",
+    "variables": {
+      "foreground": "Text color",
+      "background": "Background color",
+      "ratio": "Contrast ratio"
+    },
+    "before": "color: #999;\nbackground: #fff; /* Contrast: 2.8:1 - Too low! */",
+    "after": "color: #666;\nbackground: #fff; /* Contrast: 5.7:1 - Passes AA */",
+    "explanation": "Text must have sufficient contrast against its background. WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt+ bold)."
+  },
+  "html-has-lang": {
+    "template": "<html lang=\"{lang}\">",
+    "variables": {
+      "lang": "Language code (e.g., 'en', 'cs', 'de')"
+    },
+    "before": "<html>",
+    "after": "<html lang=\"cs\">",
+    "explanation": "The <html> element must have a lang attribute to specify the page's primary language. This helps screen readers pronounce content correctly."
+  },
+  "heading-order": {
+    "template": "<h{level}>{heading}</h{level}>",
+    "variables": {
+      "level": "Heading level (1-6)",
+      "heading": "Heading text"
+    },
+    "before": "<h1>Main Title</h1>\n<h3>Subtitle</h3> <!-- Skipped h2! -->",
+    "after": "<h1>Main Title</h1>\n<h2>Subtitle</h2>",
+    "explanation": "Heading levels should not be skipped. After an <h1>, use <h2>, not <h3>. This creates a logical document outline."
+  },
+  "link-name": {
+    "template": "<a href=\"{url}\">{meaningful_text}</a>",
+    "variables": {
+      "url": "Link destination",
+      "meaningful_text": "Descriptive link text"
+    },
+    "before": "<a href=\"/products\">Click here</a>",
+    "after": "<a href=\"/products\">View our products</a>",
+    "explanation": "Link text should be meaningful and describe the destination. Avoid generic phrases like 'click here' or 'read more'."
+  },
+  "button-name": {
+    "template": "<button type=\"{type}\">{text}</button>",
+    "variables": {
+      "type": "Button type (button, submit, reset)",
+      "text": "Button label"
+    },
+    "before": "<button><i class=\"icon-save\"></i></button>",
+    "after": "<button type=\"button\">\n  <i class=\"icon-save\"></i>\n  <span class=\"sr-only\">Save</span>\n</button>",
+    "explanation": "Buttons must have accessible names. If using only an icon, add visually-hidden text or use aria-label."
+  },
+  "list": {
+    "template": "<ul>\n  <li>{item}</li>\n</ul>",
+    "variables": {
+      "item": "List item content"
+    },
+    "before": "<div>\n  <div>Item 1</div>\n  <div>Item 2</div>\n</div>",
+    "after": "<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>",
+    "explanation": "Use semantic list elements (<ul>, <ol>) for lists of items. This helps screen readers announce item counts and navigation."
+  },
+  "aria-label": {
+    "template": "<button aria-label=\"{label}\">\n  <i class=\"{icon}\"></i>\n</button>",
+    "variables": {
+      "label": "Accessible label",
+      "icon": "Icon class"
+    },
+    "before": "<button>\n  <i class=\"icon-close\"></i>\n</button>",
+    "after": "<button aria-label=\"Close dialog\">\n  <i class=\"icon-close\"></i>\n</button>",
+    "explanation": "When a button contains only an icon or non-text content, use aria-label to provide an accessible name."
+  },
+  "input-type": {
+    "template": "<input type=\"{type}\" name=\"{name}\" {attributes}>",
+    "variables": {
+      "type": "Appropriate input type (email, tel, url, number, etc.)",
+      "name": "Input name",
+      "attributes": "Additional attributes"
+    },
+    "before": "<input type=\"text\" name=\"email\">",
+    "after": "<input type=\"email\" name=\"email\" autocomplete=\"email\">",
+    "explanation": "Use semantic input types (email, tel, url) for better mobile keyboards and built-in validation. Add autocomplete for common fields."
+  },
+  "landmark": {
+    "template": "<{element} role=\"{role}\">",
+    "variables": {
+      "element": "HTML element",
+      "role": "Landmark role"
+    },
+    "before": "<div class=\"header\">",
+    "after": "<header>\n  <!-- or -->\n<div role=\"banner\">",
+    "explanation": "Use semantic HTML5 elements (<header>, <nav>, <main>, <footer>) or ARIA landmark roles to define page regions."
+  },
+  "table-headers": {
+    "template": "<table>\n  <thead>\n    <tr>\n      <th scope=\"{scope}\">{header}</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>{data}</td>\n    </tr>\n  </tbody>\n</table>",
+    "variables": {
+      "scope": "Header scope (col, row)",
+      "header": "Header text",
+      "data": "Cell data"
+    },
+    "before": "<table>\n  <tr>\n    <td><b>Name</b></td>\n    <td><b>Age</b></td>\n  </tr>\n</table>",
+    "after": "<table>\n  <thead>\n    <tr>\n      <th scope=\"col\">Name</th>\n      <th scope=\"col\">Age</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>John</td>\n      <td>30</td>\n    </tr>\n  </tbody>\n</table>",
+    "explanation": "Use <th> for table headers with appropriate scope attribute. Structure tables with <thead> and <tbody> for clarity."
+  },
+  "skip-link": {
+    "template": "<a href=\"#main-content\" class=\"skip-link\">Skip to main content</a>\n<!-- ... -->\n<main id=\"main-content\">",
+    "variables": {},
+    "before": "<!-- No skip link -->",
+    "after": "<a href=\"#main-content\" class=\"skip-link\">Skip to main content</a>\n\n<main id=\"main-content\">\n  <!-- Main content -->\n</main>\n\n<style>\n.skip-link {\n  position: absolute;\n  top: -40px;\n  left: 0;\n  background: #000;\n  color: #fff;\n  padding: 8px;\n  text-decoration: none;\n  z-index: 100;\n}\n.skip-link:focus {\n  top: 0;\n}\n</style>",
+    "explanation": "Add a skip link as the first focusable element to let keyboard users bypass navigation and jump to main content."
+  },
+  "focus-visible": {
+    "template": "element:focus {\n  outline: 2px solid {color};\n  outline-offset: 2px;\n}",
+    "variables": {
+      "color": "Focus indicator color"
+    },
+    "before": "*:focus {\n  outline: none; /* BAD! */\n}",
+    "after": "button:focus,\na:focus,\ninput:focus {\n  outline: 2px solid #2563eb;\n  outline-offset: 2px;\n}",
+    "explanation": "Never remove focus indicators completely. Always provide visible focus styles for keyboard navigation. Use outline or box-shadow."
+  },
+  "aria-prohibited-attr": {
+    "template": "<{element}>",
+    "variables": {
+      "element": "HTML element"
+    },
+    "before": "<div role=\"none\" aria-label=\"Description\">Content</div>",
+    "after": "<div>Content</div>",
+    "explanation": "Certain ARIA attributes cannot be used on elements with specific roles. For example, aria-label is not allowed on elements with role=\"none\" or role=\"presentation\". Remove the prohibited ARIA attribute or change the role."
+  },
+  "aria-required-attr": {
+    "template": "<div role=\"{role}\" aria-{required}=\"{value}\">",
+    "variables": {
+      "role": "ARIA role",
+      "required": "Required attribute",
+      "value": "Attribute value"
+    },
+    "before": "<div role=\"checkbox\">Option</div>",
+    "after": "<div role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\">Option</div>",
+    "explanation": "Elements with ARIA roles must have all required ARIA attributes. For example, role=\"checkbox\" requires aria-checked. Check the ARIA specification for required attributes for each role."
+  },
+  "aria-valid-attr-value": {
+    "template": "aria-{attribute}=\"{valid-value}\"",
+    "variables": {
+      "attribute": "ARIA attribute name",
+      "valid-value": "Valid value for the attribute"
+    },
+    "before": "<button aria-pressed=\"yes\">Toggle</button>",
+    "after": "<button aria-pressed=\"true\">Toggle</button>",
+    "explanation": "ARIA attributes must have valid values according to the ARIA specification. For example, aria-pressed accepts 'true', 'false', or 'mixed', not 'yes' or 'no'."
+  },
+  "region": {
+    "template": "<div role=\"region\" aria-labelledby=\"{id}\">\n  <h2 id=\"{id}\">{title}</h2>\n</div>",
+    "variables": {
+      "id": "Unique identifier",
+      "title": "Region title"
+    },
+    "before": "<div role=\"region\">\n  <h2>Important Section</h2>\n</div>",
+    "after": "<div role=\"region\" aria-labelledby=\"section-title\">\n  <h2 id=\"section-title\">Important Section</h2>\n</div>",
+    "explanation": "Elements with role=\"region\" must have an accessible name. Use aria-labelledby to reference a heading, or aria-label to provide a label."
+  }
+}

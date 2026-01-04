@@ -5,11 +5,16 @@ import { runLandmarksActTest } from './Landmarks';
 import { runSkipLinkActTest } from './SkipLink';
 import { runModalFocusActTest } from './ModalFocus';
 import { runCarouselActTest } from './CarouselAutoplay';
+import { runMetaViewportActTest } from './MetaViewport';
+import { runOrientationLockActTest } from './OrientationLock';
+import { runAutoplayMediaActTest } from './AutoplayMedia';
 import { runFormErrorsActTest } from './FormErrors';
+import { runSuspiciousAltTextTest } from './SuspiciousAltText';
 
 export interface CustomActSuiteResult {
   violations: AccessibilityViolation[];
   actionItems: HumanReadableActionItem[];
+  pageDimensions?: { width: number; height: number };
 }
 
 export interface CustomActSuiteOptions {
@@ -53,13 +58,37 @@ const REGISTERED_TESTS: RegisteredActTest[] = [
     id: 'carousel-autoplay',
     label: 'Auto-rotating carousels / sliders',
     run: runCarouselActTest,
-    defaultEnabled: false,
+    defaultEnabled: true,
   },
   {
     id: 'form-errors',
     label: 'Form error handling and announcements',
     run: runFormErrorsActTest,
-    defaultEnabled: false,
+    defaultEnabled: true,
+  },
+  {
+    id: 'suspicious-alt',
+    label: 'Suspicious or meaningless alt text detection',
+    run: runSuspiciousAltTextTest,
+    defaultEnabled: true,
+  },
+  {
+    id: 'meta-viewport',
+    label: 'Meta viewport zoom restrictions',
+    run: runMetaViewportActTest,
+    defaultEnabled: true,
+  },
+  {
+    id: 'orientation-lock',
+    label: 'Orientation lock (CSS transform)',
+    run: runOrientationLockActTest,
+    defaultEnabled: true,
+  },
+  {
+    id: 'autoplay-media',
+    label: 'Autoplay audio/video',
+    run: runAutoplayMediaActTest,
+    defaultEnabled: true,
   },
 ];
 
@@ -69,11 +98,12 @@ export async function runCustomActSuite(
   options: CustomActSuiteOptions = {},
 ): Promise<CustomActSuiteResult> {
   const enabledTestIds = resolveEnabledTestIds(options);
-  const { violations, actionItems } = await runRegisteredTests(page, url, enabledTestIds);
+  const { violations, actionItems, pageDimensions } = await runRegisteredTests(page, url, enabledTestIds);
 
   return {
     violations,
     actionItems,
+    pageDimensions
   };
 }
 
@@ -102,6 +132,7 @@ async function runRegisteredTests(
 ): Promise<CustomActSuiteResult> {
   const allViolations: AccessibilityViolation[] = [];
   const allActionItems: HumanReadableActionItem[] = [];
+  let pageDimensions: { width: number; height: number } | undefined;
 
   for (const test of REGISTERED_TESTS) {
     if (!enabledTestIds.has(test.id)) {
@@ -121,6 +152,10 @@ async function runRegisteredTests(
       if (Array.isArray(result.actionItems)) {
         allActionItems.push(...result.actionItems);
       }
+      
+      if ('pageDimensions' in result && result.pageDimensions) {
+        pageDimensions = result.pageDimensions;
+      }
     } catch (error) {
       console.warn('[CustomACT] Test failed:', test.id, error);
     }
@@ -129,5 +164,6 @@ async function runRegisteredTests(
   return {
     violations: allViolations,
     actionItems: allActionItems,
+    pageDimensions
   };
 }

@@ -21,7 +21,12 @@ export class Crawler {
   constructor(maxPages: number = 5, scanOptions: ScanOptions = {}) {
     this.scanner = new WebScanner();
     this.maxPages = maxPages;
-    this.scanOptions = scanOptions;
+    // Pro crawler VŽDY vypneme screenshoty (ušetří stovky MB)
+    this.scanOptions = {
+      ...scanOptions,
+      skipScreenshots: true
+    };
+    console.log('[Crawler] Screenshot generation disabled for crawler mode.');
   }
 
   // Helper pro scheduler – projde web a uloží výsledek do historie.

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Focus Order</title>
+</head>
+<body>
+    <h1>Focus Order Test</h1>
+    <p>The tab order should follow the visual order, but tabindex > 0 breaks this.</p>
+
+    <!-- FAIL: Positive tabindex messes up order -->
+    <div>
+        <button tabindex="3">Third (3)</button>
+        <button tabindex="1">First (1)</button>
+        <button tabindex="2">Second (2)</button>
+    </div>
+
+    <!-- PASS: Natural order -->
+    <div style="margin-top: 20px;">
+        <button>Natural 1</button>
+        <button>Natural 2</button>
+        <button>Natural 3</button>
+    </div>
+</body>
+</html>

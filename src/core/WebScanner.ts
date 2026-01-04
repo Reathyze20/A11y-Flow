@@ -6,9 +6,14 @@ import {
   BrokenLinksSummary,
   PerformanceReport,
   KeyboardNavigationReport,
+  HeadingStructure,
+  HeadingInfo,
 } from './types';
 import { ViolationMapper } from './ViolationMapper';
 import { ScreenshotCapturer } from './ScreenshotCapturer';
+import { ScreenshotAnnotator } from './ScreenshotAnnotator';
+import { BadgeService } from './BadgeService';
+import { AccessibilityStatementGenerator } from './AccessibilityStatementGenerator';
 import { URL } from 'url';
 
 import { AxePuppeteer } from '@axe-core/puppeteer';
@@ -23,6 +28,8 @@ export type ScanDevice =
 
 export interface ScanOptions {
   device?: ScanDevice;
+  // Pro crawler můžeme vypnout screenshoty (uloží stovky MB)
+  skipScreenshots?: boolean;
 }
 
 export class WebScanner {
@@ -64,6 +71,7 @@ export class WebScanner {
         report.keyboardNavigation = keyboardReport;
       }
 
+      report.headingStructure = await this.extractHeadingStructure(page);
       report.brokenLinks = await this.checkBrokenLinksSafe(page);
 
       const violationsToCapture = [
@@ -73,7 +81,27 @@ export class WebScanner {
         ...report.violations.minor,
       ];
 
-      await this.enrichViolationsWithScreenshots(page, violationsToCapture);
+      // Capture bounding boxes for screenshot annotation
+      await this.captureBoundingBoxes(page, violationsToCapture);
+
+      // DISABLED: Screenshot annotation nefunguje správně (Jimp color conversion issue)
+      // Bez anotace je screenshot k ničemu - element selector + HTML střídají
+      // if (!options.skipScreenshots) {
+      //   await this.generateAnnotatedScreenshot(page, report);
+      // }
+      console.log('[WebScanner] Screenshot generation disabled (not needed with CSS selectors).');
+
+      // Generate domain hash for badge
+      const badgeService = new BadgeService();
+      report.domainHash = badgeService.generateDomainHash(url);
+
+      // Generate accessibility statement
+      const statementGenerator = new AccessibilityStatementGenerator();
+      const statement = statementGenerator.generate(report, 'cs'); // Default to Czech
+      report.accessibilityStatement = statement.markdown;
+      report.accessibilityStatementHtml = statement.html;
+
+      // await this.enrichViolationsWithScreenshots(page, violationsToCapture);
 
       return report;
     } catch (error) {
@@ -123,7 +151,8 @@ export class WebScanner {
 
       const xpath = `//button[${xpathConditions}]`;
 
-      const buttons = await (page as any).$x(xpath);
+      // Puppeteer removed page.$x, use 'xpath/' selector prefix
+      const buttons = await page.$$(`xpath/${xpath}`);
 
       if (buttons.length > 0) {
         console.log(`[WebScanner] Dismissing cookies via text match (${buttons.length} candidates)`);
@@ -335,6 +364,14 @@ export class WebScanner {
     const device: ScanDevice = (options.device as ScanDevice) || 'desktop';
 
     await this.configureDeviceProfile(page, device);
+
+    // Hide scrollbars to ensure consistent layout width between scan (with scrollbar) and screenshot (fullPage, no scrollbar)
+    try {
+        await page.addStyleTag({ content: '::-webkit-scrollbar { display: none; }' });
+    } catch (e) {
+        console.warn('[WebScanner] Failed to hide scrollbars:', e);
+    }
+
     await this.setupPerformanceObservers(page);
 
     return page;
@@ -408,6 +445,27 @@ export class WebScanner {
       if (customAct.actionItems.length > 0) {
         report.humanReadable.actionItems.push(...customAct.actionItems);
       }
+      
+      if (customAct.pageDimensions) {
+        report.pageDimensions = customAct.pageDimensions;
+      }
+
+      // Capture full page screenshot for visualization (Phase 5)
+      // DISABLED by user request: "Stále je přítomen screen. Odeber tuto funkcionalitu."
+      /*
+      try {
+        const screenshotBuffer = await page.screenshot({
+          fullPage: true,
+          type: 'jpeg',
+          quality: 50,
+          encoding: 'base64'
+        });
+        report.fullPageScreenshot = `data:image/jpeg;base64,${screenshotBuffer}`;
+      } catch (err) {
+        console.warn('[WebScanner] Failed to capture full page screenshot:', err);
+      }
+      */
+
     } catch (error) {
       console.warn('[WebScanner] Custom ACT suite failed (non-fatal):', error);
     }
@@ -627,6 +685,8 @@ export class WebScanner {
       }
     });
 
+    let safeCycleLength = -1;
+
     for (let step = 1; step <= maxSteps; step++) {
       await page.keyboard.press('Tab');
       await new Promise((r) => setTimeout(r, 40));
@@ -646,21 +706,34 @@ export class WebScanner {
           styles.outlineWidth !== '0px' &&
           styles.outlineColor !== 'rgba(0, 0, 0, 0)';
 
-        const selectorPieces: string[] = [];
-        if (active.id) selectorPieces.push(`#${active.id}`);
-        if (active.className && typeof active.className === 'string') {
-          const cls = active.className
-            .split(/\s+/)
-            .filter(Boolean)
-            .map((c: string) => `.${c}`)
-            .join('');
-          if (cls) selectorPieces.push(cls);
-        }
+        const getUniqueSelector = (el: any) => {
+          if (!el || el.nodeType !== 1) return '';
+          if (el.id) return '#' + el.id;
+          
+          const path: string[] = [];
+          let current = el;
+          
+          while (current && current.nodeType === 1) {
+              let selector = current.tagName.toLowerCase();
+              if (current.id) {
+                  selector = '#' + current.id;
+                  path.unshift(selector);
+                  break; 
+              } else {
+                  let sibling = current;
+                  let nth = 1;
+                  while (sibling = sibling.previousElementSibling) {
+                      if (sibling.tagName === current.tagName) nth++;
+                  }
+                  if (nth > 1) selector += `:nth-of-type(${nth})`;
+              }
+              path.unshift(selector);
+              current = current.parentNode;
+          }
+          return path.join(' > ');
+        };
 
-        const selector =
-          selectorPieces.length > 0
-            ? `${active.tagName.toLowerCase()}${selectorPieces.join('')}`
-            : active.tagName.toLowerCase();
+        const selector = getUniqueSelector(active);
 
         const vw = (globalThis as any).innerWidth || 0;
         const vh = (globalThis as any).innerHeight || 0;
@@ -739,7 +812,15 @@ export class WebScanner {
 
       if (visitedSelectors.has(selector)) {
         const firstStep = visitedSelectors.get(selector)!;
-        if (step - firstStep < 10) {
+        const diff = step - firstStep;
+
+        // Pokud se vrátíme na začátek (step 1), považujeme délku tohoto cyklu za "bezpečnou" (page wrap)
+        if (firstStep === 1) {
+          safeCycleLength = diff;
+        }
+
+        // Reportujeme jen pokud je smyčka krátká (< 10) A NENÍ to jen opakování celého cyklu stránky
+        if (diff < 10 && diff !== safeCycleLength) {
           issues.push({
             type: 'focus-loop',
             step,
@@ -784,22 +865,331 @@ export class WebScanner {
       }
     }
 
+    let localExecutablePath = '';
+    if (!isLambda) {
+      try {
+        // Try to get the path from the full puppeteer package
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const p = require('puppeteer');
+        localExecutablePath = p.executablePath();
+      } catch (e) {
+        console.warn('[WebScanner] Could not load puppeteer executable path, relying on system chrome');
+      }
+    }
+
     const launchOptions = isLambda
       ? {
-          args: [...chromium.args, '--disable-gpu', '--disable-dev-shm-usage', '--disable-setuid-sandbox', '--no-sandbox', '--single-process'],
-          defaultViewport: chromium.defaultViewport,
+          args: [...(chromium as any).args, '--disable-gpu', '--disable-dev-shm-usage', '--disable-setuid-sandbox', '--no-sandbox', '--single-process', '--autoplay-policy=no-user-gesture-required'],
+          defaultViewport: (chromium as any).defaultViewport,
           executablePath: executablePath,
-          headless: chromium.headless,
+          headless: (chromium as any).headless,
           ignoreHTTPSErrors: true,
         }
       : {
-          channel: 'chrome',
+          executablePath: localExecutablePath || undefined,
+          channel: localExecutablePath ? undefined : 'chrome',
           headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--autoplay-policy=no-user-gesture-required'],
         };
 
     console.log('[WebScanner] Launching Puppeteer...');
     this.browser = await puppeteer.launch(launchOptions as any);
     console.log('[WebScanner] Browser launched successfully.');
+  }
+
+  /**
+   * Capture bounding boxes for all violation nodes
+   * Používá se pro screenshot annotation feature
+   */
+  private async captureBoundingBoxes(
+    page: Page,
+    violations: AccessibilityViolation[]
+  ): Promise<void> {
+    console.log('[WebScanner] Capturing bounding boxes for violations...');
+
+    for (const violation of violations) {
+      for (const node of violation.nodes) {
+        try {
+          // Zkusit najít element pomocí target selektoru
+          if (node.target && node.target.length > 0) {
+            const selector = Array.isArray(node.target) ? node.target[0] : node.target;
+            
+            // Puppeteer může mít problém s některými axe selektory,
+            // takže musíme použít evaluate pro nalezení elementu
+            const boundingBox = await page.evaluate((sel) => {
+              try {
+                // Zkusit jako CSS selector
+                const element = document.querySelector(sel);
+                if (element) {
+                  const rect = element.getBoundingClientRect();
+                  return {
+                    x: rect.x,
+                    y: rect.y,
+                    width: rect.width,
+                    height: rect.height
+                  };
+                }
+                return null;
+              } catch (e) {
+                return null;
+              }
+            }, selector);
+
+            if (boundingBox) {
+              node.boundingBox = boundingBox;
+            }
+          }
+        } catch (error) {
+          // Ignorovat chyby při zachycování bounding boxů
+          console.warn(`[WebScanner] Failed to capture bounding box for ${node.target}:`, error);
+        }
+      }
+    }
+
+    const capturedCount = violations.reduce(
+      (sum, v) => sum + v.nodes.filter(n => n.boundingBox).length,
+      0
+    );
+    console.log(`[WebScanner] Captured ${capturedCount} bounding boxes.`);
+  }
+
+  /**
+   * Generate annotated screenshot with violation markers
+   */
+  private async generateAnnotatedScreenshot(
+    page: Page,
+    report: AuditReport
+  ): Promise<void> {
+    try {
+      console.log('[WebScanner] Generating annotated screenshot...');
+
+      // Pokud nejsou žádné critical nebo serious violations, nemusíme anotovat
+      const hasCriticalOrSerious = 
+        report.violations.critical.length > 0 || 
+        report.violations.serious.length > 0;
+
+      if (!hasCriticalOrSerious) {
+        console.log('[WebScanner] No critical/serious violations, skipping annotation.');
+        return;
+      }
+
+      // Získat celkovou výšku stránky
+      const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+      
+      // Pokud je stránka příliš dlouhá, omezíme screenshot (hnání počáteční viewport + 2000px)
+      const MAX_SCREENSHOT_HEIGHT = 2500;
+      const shouldLimitHeight = pageHeight > MAX_SCREENSHOT_HEIGHT;
+      
+      if (shouldLimitHeight) {
+        console.log(`[WebScanner] Page too tall (${pageHeight}px), limiting screenshot to ${MAX_SCREENSHOT_HEIGHT}px`);
+      }
+
+      // Capture screenshot s omezením
+      const screenshotOptions: any = {
+        type: 'jpeg',
+        quality: 50, // Sníženo z 70 na 50 pro menší velikost
+        encoding: 'base64'
+      };
+
+      if (shouldLimitHeight) {
+        // Nativní clip pro omezení výšky
+        const viewport = page.viewport();
+        screenshotOptions.clip = {
+          x: 0,
+          y: 0,
+          width: viewport?.width || 1280,
+          height: Math.min(pageHeight, MAX_SCREENSHOT_HEIGHT)
+        };
+        screenshotOptions.fullPage = false;
+      } else {
+        screenshotOptions.fullPage = true;
+      }
+
+      const screenshotBuffer = await page.screenshot(screenshotOptions) as string;
+
+      // Annotate screenshot
+      const annotator = new ScreenshotAnnotator();
+      const annotatedBase64 = await annotator.annotateScreenshot(
+        screenshotBuffer,
+        report.violations,
+        ['critical', 'serious'] // Pouze critical a serious
+      );
+
+      // Uložit do reportu
+      report.annotatedScreenshot = annotatedBase64;
+      
+      console.log(`[WebScanner] Annotated screenshot generated (${Math.round(annotatedBase64.length / 1024)}KB).`);
+    } catch (error) {
+      console.warn('[WebScanner] Failed to generate annotated screenshot:', error);
+      // Non-fatal, pokračujeme bez annotated screenshot
+    }
+  }
+  /**
+   * Extract heading structure (h1-h6) from the page
+   */
+  private async extractHeadingStructure(page: Page): Promise<HeadingStructure> {
+    try {
+      console.log('[WebScanner] Extracting heading structure...');
+
+      const headings = await page.evaluate(() => {
+        const result: Array<{ level: number; text: string; selector?: string }> = [];
+        const headingElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        
+        headingElements.forEach((el, index) => {
+          const tagName = el.tagName.toLowerCase();
+          const level = parseInt(tagName.substring(1));
+          const text = el.textContent?.trim() || '';
+          
+          const id = el.id ? `#${el.id}` : '';
+          const className = el.className ? `.${el.className.split(' ')[0]}` : '';
+          const selector = id || `${tagName}${className}`;
+          
+          result.push({
+            level,
+            text,
+            selector: selector || `${tagName}:nth-of-type(${index + 1})`
+          });
+        });
+        
+        return result;
+      });
+
+      const issues: Array<{
+        type: 'missing-h1' | 'multiple-h1' | 'skipped-level' | 'empty-heading' | 'first-not-h1' | 'duplicate-headings' | 'generic-heading' | 'very-long-heading' | 'very-short-heading';
+        description: string;
+        wcagReference?: string;
+        affectedHeadings?: Array<{ level: number; text: string; selector?: string }>;
+      }> = [];
+      
+      const h1Count = headings.filter(h => h.level === 1).length;
+      const h1Headings = headings.filter(h => h.level === 1);
+      
+      if (h1Count === 0) {
+        issues.push({
+          type: 'missing-h1',
+          description: 'Stránka neobsahuje žádný hlavní nadpis <h1>. Každá stránka by měla mít právě jeden h1.',
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: []
+        });
+      } else if (h1Count > 1) {
+        issues.push({
+          type: 'multiple-h1',
+          description: `Stránka obsahuje ${h1Count} nadpisů h1. Měl by existovat pouze jeden hlavní nadpis.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: h1Headings
+        });
+      }
+
+      for (let i = 1; i < headings.length; i++) {
+        const prevLevel = headings[i - 1].level;
+        const currLevel = headings[i].level;
+        
+        if (currLevel > prevLevel + 1) {
+          issues.push({
+            type: 'skipped-level',
+            description: `Přeskočena úroveň nadpisu: z h${prevLevel} na h${currLevel}. Nadpisy by měly postupovat sekvenčně (h1 → h2 → h3...).`,
+            wcagReference: '1.3.1 Info and Relationships',
+            affectedHeadings: [headings[i - 1], headings[i]]
+          });
+          break;
+        }
+      }
+
+      const emptyHeadings = headings.filter(h => !h.text || h.text.length === 0);
+      if (emptyHeadings.length > 0) {
+        issues.push({
+          type: 'empty-heading',
+          description: `Nalezeno ${emptyHeadings.length} prázdných nadpisů. Všechny nadpisy by měly obsahovat smysluplný text.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: emptyHeadings
+        });
+      }
+
+      // Check if first heading is not H1
+      if (headings.length > 0 && headings[0].level !== 1) {
+        issues.push({
+          type: 'first-not-h1',
+          description: `První nadpis na stránce je H${headings[0].level} místo H1. Stránka by měla začínat hlavním nadpisem H1.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: [headings[0]]
+        });
+      }
+
+      // Check for duplicate headings (same level, same text)
+      const duplicates = new Map<string, Array<typeof headings[0]>>();
+      headings.forEach(h => {
+        if (h.text && h.text.length > 0) {
+          const key = `${h.level}:${h.text.toLowerCase().trim()}`;
+          if (!duplicates.has(key)) {
+            duplicates.set(key, []);
+          }
+          duplicates.get(key)!.push(h);
+        }
+      });
+
+      duplicates.forEach((group, key) => {
+        if (group.length > 1) {
+          const level = group[0].level;
+          const text = group[0].text;
+          issues.push({
+            type: 'duplicate-headings',
+            description: `Nalezeno ${group.length} identických nadpisů H${level}: "${text}". Každý nadpis by měl být unikátní pro lepší navigaci.`,
+            wcagReference: '2.4.6 Headings and Labels',
+            affectedHeadings: group
+          });
+        }
+      });
+
+      // Check for generic/non-descriptive headings
+      const genericTerms = ['klikněte zde', 'click here', 'více', 'more', 'read more', 'číst více', 'zde', 'here', 'další', 'next', 'předchozí', 'previous'];
+      const genericHeadings = headings.filter(h => {
+        const text = h.text.toLowerCase().trim();
+        return genericTerms.some(term => text === term || text.includes(term));
+      });
+
+      if (genericHeadings.length > 0) {
+        issues.push({
+          type: 'generic-heading',
+          description: `Nalezeno ${genericHeadings.length} generických nadpisů (např. "Více", "Klikněte zde"). Nadpisy by měly být deskriptivní a popisovat obsah sekce.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: genericHeadings
+        });
+      }
+
+      // Check for very long headings (>100 characters)
+      const longHeadings = headings.filter(h => h.text && h.text.length > 100);
+      if (longHeadings.length > 0) {
+        issues.push({
+          type: 'very-long-heading',
+          description: `Nalezeno ${longHeadings.length} velmi dlouhých nadpisů (>100 znaků). Nadpisy by měly být stručné a výstižné.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: longHeadings
+        });
+      }
+
+      // Check for very short headings (1-2 characters)
+      const shortHeadings = headings.filter(h => h.text && h.text.trim().length > 0 && h.text.trim().length <= 2);
+      if (shortHeadings.length > 0) {
+        issues.push({
+          type: 'very-short-heading',
+          description: `Nalezeno ${shortHeadings.length} velmi krátkých nadpisů (1-2 znaky). Nadpisy by měly být smysluplné a deskriptivní.`,
+          wcagReference: '2.4.6 Headings and Labels',
+          affectedHeadings: shortHeadings
+        });
+      }
+
+      console.log(`[WebScanner] Found ${headings.length} headings with ${issues.length} issues.`);
+
+      return {
+        headings,
+        issues
+      };
+    } catch (error) {
+      console.warn('[WebScanner] Failed to extract heading structure:', error);
+      return {
+        headings: [],
+        issues: []
+      };
+    }
   }
 }

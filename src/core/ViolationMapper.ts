@@ -47,6 +47,11 @@ export class ViolationMapper {
         wcagReference = this.extractWcagFromTags(v);
       }
 
+      // Get code snippet for fix-it feature
+      const codeSnippet = firstNode
+        ? RemediationService.getCodeSnippet(v.id, firstNode)
+        : undefined;
+
       return {
         id: v.id,
         impact,
@@ -63,6 +68,7 @@ export class ViolationMapper {
         elementLabel,
         fingerprint,
         componentName,
+        codeSnippet,
       };
     });
 
@@ -131,15 +137,15 @@ export class ViolationMapper {
   private static getPriorityMeta(impact: ImpactLevel | null): { label: HumanReadableActionItem['priority']; weight: number } {
     switch (impact) {
       case 'critical':
-        return { label: '🔴 Kritická', weight: 4 };
+        return { label: '🔴 Critical', weight: 4 };
       case 'serious':
-        return { label: '🟠 Vysoká', weight: 3 };
+        return { label: '🟠 Serious', weight: 3 };
       case 'moderate':
-        return { label: '🟡 Střední', weight: 2 };
+        return { label: '🟡 Moderate', weight: 2 };
       case 'minor':
-        return { label: '🔵 Nízká', weight: 1 };
+        return { label: '🔵 Minor', weight: 1 };
       default:
-        return { label: '🔵 Nízká', weight: 1 };
+        return { label: '🔵 Minor', weight: 1 };
     }
   }
 
@@ -359,13 +365,13 @@ export class ViolationMapper {
 
     let roleLabel: string;
     if (tag === 'button' || (tag === 'input' && /button|submit|reset/i.test(getAttr('type') || ''))) {
-      roleLabel = 'Tlačítko';
+      roleLabel = 'Button';
     } else if (tag === 'a') {
-      roleLabel = 'Odkaz';
+      roleLabel = 'Link';
     } else if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-      roleLabel = 'Formulářové pole';
+      roleLabel = 'Form field';
     } else {
-      roleLabel = 'Prvek';
+      roleLabel = 'Element';
     }
 
     return `${roleLabel} "${name}"`;

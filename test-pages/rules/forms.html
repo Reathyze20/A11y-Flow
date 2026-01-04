@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Form Errors</title>
+</head>
+<body>
+    <h1>Form Errors Test</h1>
+
+    <form>
+        <!-- FAIL: Missing label -->
+        <div>
+            <input type="text" name="username" placeholder="Username (No Label)">
+        </div>
+
+        <!-- FAIL: Empty label -->
+        <div>
+            <label for="email"></label>
+            <input type="email" id="email" name="email">
+        </div>
+
+        <!-- FAIL: Duplicate ID -->
+        <div>
+            <label for="dup">Duplicate 1</label>
+            <input type="text" id="dup">
+            <label for="dup">Duplicate 2</label>
+            <input type="text" id="dup">
+        </div>
+
+        <!-- PASS: Correct label -->
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password">
+        </div>
+    </form>
+</body>
+</html>

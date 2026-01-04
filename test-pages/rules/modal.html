@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Modal Focus</title>
+</head>
+<body>
+    <h1>Modal Focus Test</h1>
+    <button>Open Modal</button>
+
+    <!-- FAIL: Modal without aria-modal="true" or focus management -->
+    <div role="dialog" aria-labelledby="modal-title" style="border: 1px solid black; padding: 20px; margin-top: 20px;">
+        <h2 id="modal-title">Modal Title</h2>
+        <p>This is a modal dialog.</p>
+        <button>Close</button>
+        <input type="text" placeholder="Input inside modal">
+    </div>
+
+    <button>Button outside modal</button>
+</body>
+</html>

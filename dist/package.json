@@ -13,7 +13,8 @@
     "init-db": "node src/scripts/init-db.js",
     "init-aws": "node src/scripts/init-aws.js",
     "init-api": "node src/scripts/init-api.js",
-    "set-stripe-secret": "node src/scripts/set-stripe-secret.js"
+    "set-stripe-secret": "node src/scripts/set-stripe-secret.js",
+    "verify-rules": "npx ts-node src/scripts/verify-act-rules.ts"
   },
   "keywords": [],
   "author": "",

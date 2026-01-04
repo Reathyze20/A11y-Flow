@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kompletní test všech heading detections</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        section {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 20px;
+        }
+        .test-header h3 {
+            margin: 0 0 5px 0;
+            color: #1976D2;
+        }
+        .test-header p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .correct {
+            border-left-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        .correct h3 {
+            color: #2E7D32;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kompletní test všech heading structure detections</h1>
+    <p><strong>Tento dokument testuje všech 9 typů detekce problémů s nadpisy.</strong></p>
+
+    <!-- Test 1: Missing H1 -->
+    <section>
+        <div class="test-header">
+            <h3>Test 1: Missing H1</h3>
+            <p>Očekáváme: Detekce chybějícího H1 nadpisu</p>
+        </div>
+        <h2>Toto je první nadpis (H2)</h2>
+        <p>Stránka nemá H1, začíná rovnou H2. To je chyba.</p>
+        <h3>Podnádpis</h3>
+        <p>Hierarchie vypadá OK, ale chybí hlavní H1.</p>
+    </section>
+
+    <!-- RESET - přidáme H1 pro další testy -->
+    <h1>Hlavní nadpis dokumentu</h1>
+
+    <!-- Test 2: Multiple H1 -->
+    <section>
+        <div class="test-header">
+            <h3>Test 2: Multiple H1</h3>
+            <p>Očekáváme: Detekce více H1 nadpisů</p>
+        </div>
+        <h1>První H1</h1>
+        <p>Tento dokument má více než jeden H1.</p>
+        <h1>Druhý H1 (to je špatně!)</h1>
+        <p>Měl by být pouze jeden hlavní nadpis.</p>
+        <h1>Třetí H1 (ještě horší!)</h1>
+        <p>Tři H1 na jedné stránce je velmi špatně.</p>
+    </section>
+
+    <!-- Test 3: Skipped Level -->
+    <section>
+        <div class="test-header">
+            <h3>Test 3: Skipped Level</h3>
+            <p>Očekáváme: Detekce přeskočené úrovně nadpisu</p>
+        </div>
+        <h2>Sekce</h2>
+        <h4>Přeskočili jsme H3!</h4>
+        <p>Z H2 přímo na H4 je špatně, musí být H3 mezi nimi.</p>
+    </section>
+
+    <!-- Test 4: Empty Heading -->
+    <section>
+        <div class="test-header">
+            <h3>Test 4: Empty Heading</h3>
+            <p>Očekáváme: Detekce prázdných nadpisů</p>
+        </div>
+        <h2></h2>
+        <p>Výše je prázdný H2 nadpis.</p>
+        <h3>   </h3>
+        <p>Výše je H3 s pouze mezerami.</p>
+        <h4></h4>
+        <p>A další prázdný nadpis.</p>
+    </section>
+
+    <!-- Test 5: First Not H1 -->
+    <section>
+        <div class="test-header">
+            <h3>Test 5: First Not H1</h3>
+            <p>Očekáváme: Detekce stránky začínající jiným než H1</p>
+        </div>
+        <p><strong>Poznámka:</strong> Tento test byl splněn v "Test 1" - první nadpis byl H2 místo H1.</p>
+    </section>
+
+    <!-- Test 6: Duplicate Headings -->
+    <section>
+        <div class="test-header">
+            <h3>Test 6: Duplicate Headings</h3>
+            <p>Očekáváme: Detekce identických nadpisů</p>
+        </div>
+        <h2>Produkty</h2>
+        <p>První sekce produktů.</p>
+        <h2>Produkty</h2>
+        <p>Druhá sekce produktů - stejný nadpis!</p>
+        <h2>Produkty</h2>
+        <p>Třetí sekce produktů - to je opravdu matoucí.</p>
+        
+        <h3>Služby</h3>
+        <p>První služba.</p>
+        <h3>Služby</h3>
+        <p>Druhá služba - opět duplicita.</p>
+    </section>
+
+    <!-- Test 7: Generic Heading -->
+    <section>
+        <div class="test-header">
+            <h3>Test 7: Generic Heading</h3>
+            <p>Očekáváme: Detekce vágních nedeskriptivních nadpisů</p>
+        </div>
+        <h2>Klikněte zde</h2>
+        <p>Tento nadpis neříká, co následuje.</p>
+        
+        <h3>Více</h3>
+        <p>Generický nadpis "Více" bez kontextu.</p>
+        
+        <h2>Číst více</h2>
+        <p>Další generický nadpis.</p>
+        
+        <h3>Zde</h3>
+        <p>Nejhorší druh nadpisu.</p>
+    </section>
+
+    <!-- Test 8: Very Long Heading -->
+    <section>
+        <div class="test-header">
+            <h3>Test 8: Very Long Heading</h3>
+            <p>Očekáváme: Detekce nadpisů delších než 100 znaků</p>
+        </div>
+        <h2>Toto je extrémně dlouhý nadpis který by ve skutečnosti měl být rozdělen na nadpis a podnádpis nebo dokonce do odstavce protože obsahuje příliš mnoho informací které by měly být strukturovány jinak a čtenář se v tom ztratí a screen reader to bude číst celé najednou což je velmi únavné</h2>
+        <p>Výše je nadpis s více než 100 znaky.</p>
+        
+        <h3>Další nadpis který je také příliš dlouhý a měl by být zkrácen na stručnější formu protože nadpisy mají být výstižné a ne nahrazovat celé odstavce textu což je problém pro přístupnost i použitelnost</h3>
+        <p>Další příliš dlouhý nadpis.</p>
+    </section>
+
+    <!-- Test 9: Very Short Heading -->
+    <section>
+        <div class="test-header">
+            <h3>Test 9: Very Short Heading</h3>
+            <p>Očekáváme: Detekce nadpisů kratších než 3 znaky</p>
+        </div>
+        <h2>A</h2>
+        <p>Nadpis s jedním písmenem.</p>
+        
+        <h3>1</h3>
+        <p>Nadpis s číslicí.</p>
+        
+        <h4>OK</h4>
+        <p>Dva znaky - stále příliš krátké.</p>
+        
+        <h2>??</h2>
+        <p>Jen otazníky.</p>
+    </section>
+
+    <!-- Test 10: CORRECT Example -->
+    <section>
+        <div class="test-header correct">
+            <h3>✓ Test 10: Correct Heading Structure</h3>
+            <p>Očekáváme: Žádné problémy detekované</p>
+        </div>
+        <h2>Správná sekce webu</h2>
+        <p>Tato sekce má správně strukturované nadpisy.</p>
+        
+        <h3>Podnádpis s dobrým popisem</h3>
+        <p>Nadpis je deskriptivní, správné délky, a hierarchie je v pořádku.</p>
+        
+        <h4>Detail s jasným významem</h4>
+        <p>Všechny nadpisy v této sekci jsou správné.</p>
+        
+        <h3>Další podnádpis sekce</h3>
+        <p>Unikátní, deskriptivní nadpisy pomáhají navigaci.</p>
+        
+        <h4>Detailní informace</h4>
+        <p>Hierarchie je zachována (H2 → H3 → H4).</p>
+    </section>
+
+    <!-- Test 11: Mixed Issues -->
+    <section>
+        <div class="test-header">
+            <h3>Test 11: Mixed Issues</h3>
+            <p>Očekáváme: Více typů problémů najednou</p>
+        </div>
+        <h2>Produkty</h2>
+        <h4>Přeskočili jsme H3</h4>
+        <h2>Produkty</h2>
+        <p>Duplicitní nadpis + přeskočená úroveň.</p>
+        <h5></h5>
+        <p>Prázdný nadpis + přeskočená úroveň (H2→H4→H5 bez H3).</p>
+        <h2>Toto je další extrémně dlouhý nadpis který je duplicitní protože jsme už měli "Produkty" dvakrát a navíc je moc dlouhý a měl by být rozdělen do více částí nebo zkrácen na stručnější formu</h2>
+        <p>Kombinace: duplicita, příliš dlouhý nadpis, možná i generic term.</p>
+    </section>
+
+    <footer style="margin-top: 40px; padding: 20px; background: #e0e0e0; border-radius: 8px;">
+        <h2>Souhrn očekávaných detekcí</h2>
+        <ul>
+            <li>✓ Missing H1 (Test 1)</li>
+            <li>✓ Multiple H1 (Test 2 - 3× H1)</li>
+            <li>✓ Skipped Level (Test 3, 11)</li>
+            <li>✓ Empty Heading (Test 4, 11 - minimálně 4×)</li>
+            <li>✓ First Not H1 (Test 1 - první nadpis byl H2)</li>
+            <li>✓ Duplicate Headings (Test 6, 11 - "Produkty" 3-4×, "Služby" 2×)</li>
+            <li>✓ Generic Heading (Test 7 - "Více", "Klikněte zde", "Zde", "Číst více")</li>
+            <li>✓ Very Long Heading (Test 8, 11 - minimálně 3×)</li>
+            <li>✓ Very Short Heading (Test 9 - "A", "1", "OK", "??" - 4×)</li>
+        </ul>
+        <p><strong>Celkem očekáváme: všech 9 typů problémů detekovaných</strong></p>
+    </footer>
+</body>
+</html>

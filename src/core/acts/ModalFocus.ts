@@ -66,7 +66,16 @@ export async function runModalFocusActTest(page: Page, pageUrl: string): Promise
 
       const closeSelector =
         '[data-dismiss="modal"], .modal-close, .close, button[aria-label*="zavř" i], button[aria-label*="close" i]';
-      const closeButton = el.querySelector(closeSelector as any);
+      let closeButton = el.querySelector(closeSelector as any);
+
+      if (!closeButton) {
+          // Fallback: check for buttons with text "Close" or "Zavřít"
+          const buttons = Array.from(el.querySelectorAll('button')) as any[];
+          closeButton = buttons.find((b: any) => {
+              const t = (b.textContent || '').trim().toLowerCase();
+              return t === 'close' || t === 'zavřít' || t === 'x';
+          });
+      }
 
       const hasClose = !!closeButton;
 
@@ -131,8 +140,8 @@ export async function runModalFocusActTest(page: Page, pageUrl: string): Promise
   const actionItem: HumanReadableActionItem = {
     id: violation.id,
     impact,
-    priority: '🟠 Vysoká',
-    category: 'Navigace',
+    priority: '🟠 Serious',
+    category: 'Navigation',
     what:
       'Modální dialog(y) nemají správně nastavenou strukturu nebo atributy pro přístupné ovládání z klávesnice (aria-modal, focusovatelné prvky, tlačítko Zavřít).',
     fix: 'Přesměrujte focus dovnitř dialogu po otevření, cyklujte ho uvnitř a po zavření ho vraťte na tlačítko, které modal otevřelo. Dialog označte role="dialog"/"alertdialog" a aria-modal="true".',

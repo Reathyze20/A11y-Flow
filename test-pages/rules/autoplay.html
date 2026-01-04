@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Autoplay Media</title>
+</head>
+<body>
+    <h1>Autoplay Media Test</h1>
+
+    <!-- FAIL: Video with autoplay -->
+    <video id="v1" src="movie.mp4" autoplay controls></video>
+
+    <!-- FAIL: Audio with autoplay -->
+    <audio id="a1" src="song.mp3" autoplay controls></audio>
+
+    <!-- PASS: No autoplay -->
+    <video src="movie.mp4" controls></video>
+
+    <script>
+        // Mock video/audio state for Puppeteer detection
+        // Since we don't have real media files, we force the properties
+        const v1 = document.getElementById('v1');
+        Object.defineProperty(v1, 'paused', { value: false });
+        Object.defineProperty(v1, 'muted', { value: false });
+        Object.defineProperty(v1, 'currentTime', { value: 10 });
+        Object.defineProperty(v1, 'duration', { value: 100 });
+
+        const a1 = document.getElementById('a1');
+        Object.defineProperty(a1, 'paused', { value: false });
+        Object.defineProperty(a1, 'muted', { value: false });
+        Object.defineProperty(a1, 'currentTime', { value: 10 });
+        Object.defineProperty(a1, 'duration', { value: 100 });
+    </script>
+</body>
+</html>

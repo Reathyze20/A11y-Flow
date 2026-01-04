@@ -206,8 +206,8 @@ export async function runSkipLinkActTest(page: Page, pageUrl: string): Promise<S
   const actionItem: HumanReadableActionItem = {
     id: violation.id,
     impact,
-    priority: '🟠 Vysoká',
-    category: 'Navigace',
+    priority: '🟠 Serious',
+    category: 'Navigation',
     what: hasBrokenCandidates
       ? 'Odkaz „Přeskočit na obsah“ existuje, ale není správně fokusovatelný nebo jeho cíl neexistuje.'
       : 'Uživatelé klávesnice musejí při každém načtení stránky projít celou hlavičku a menu – chybí odkaz „Přeskočit na obsah“. ',

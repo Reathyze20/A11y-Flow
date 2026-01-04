@@ -6,6 +6,9 @@ export { scanSchedulerHandler } from './handlers/ScanScheduler';
 export { historyHandler } from './handlers/HistoryHandler';
 import { AuditReport, CrawlSummary } from './core/types';
 
+// Export WebScanner pro externí použití
+export { WebScanner, ScanDevice } from './core/WebScanner';
+
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
   const headers = {
     'Content-Type': 'application/json',

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Suspicious Alt Text</title>
+</head>
+<body>
+    <h1>Suspicious Alt Text Test</h1>
+    
+    <!-- FAIL: Suspicious text -->
+    <img src="placeholder.jpg" alt="image" />
+    <img src="placeholder.jpg" alt="picture" />
+    <img src="placeholder.jpg" alt="logo" />
+    <img src="placeholder.jpg" alt="placeholder.jpg" />
+    <img src="placeholder.jpg" alt=" " /> <!-- Suspicious space -->
+
+    <!-- PASS: Good text -->
+    <img src="placeholder.jpg" alt="A cute cat sitting on a fence" />
+    <img src="placeholder.jpg" alt="" /> <!-- Decorative -->
+</body>
+</html>

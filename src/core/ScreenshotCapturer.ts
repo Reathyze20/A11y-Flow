@@ -78,8 +78,12 @@ export class ScreenshotCapturer {
       if (!shadowRoot) return null;
 
       // Najdeme další element v hierarchii
-      // as ElementHandle je nutné přetypování v Puppeteeru
-      currentHandle = await shadowRoot.$(selectors[i]) as ElementHandle;
+      // Musíme ověřit, že shadowRoot je ElementHandle, protože může být JSHandle
+      if ('$' in shadowRoot) {
+        currentHandle = await (shadowRoot as any).$(selectors[i]) as ElementHandle;
+      } else {
+        return null;
+      }
     }
 
     return currentHandle;

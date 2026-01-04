@@ -21,28 +21,48 @@ export const LANDMARKS_ACT_RULE_URL = `https://www.w3.org/WAI/standards-guidelin
  * nechat na implementaci.
  */
 export async function runLandmarksActTest(page: Page, pageUrl: string): Promise<LandmarksActResult | null> {
-  // TODO: 1) Pomocí page.evaluate projít DOM a zjistit:
-  //  - zda existuje právě jedna role="main" / <main>
-  //  - zda je přítomna hlavní navigace (role="navigation")
-  //  - zda se nepoužívá více banner/contentinfo landmarků v rozporu s doporučeními
-  // 2) Pokud je vše v pořádku, vrať null
-  // 3) Pokud najdeš porušení, postav jedno nebo více AccessibilityViolation
-  //    s odpovídajícími actRuleIds/actRuleUrls a HumanReadableActionItem.
-
   const impact: ImpactLevel = 'moderate';
 
-  // Placeholder – skutečnou logiku doplň později
-  const hasIssues = false;
-  if (!hasIssues) return null;
+  const info = await page.evaluate(() => {
+    const d = (globalThis as any).document as any;
+    if (!d) return { problems: [] };
+
+    const problems: string[] = [];
+    const mains = d.querySelectorAll('main, [role="main"]');
+    
+    // Check 1: Exactly one main landmark
+    if (mains.length === 0) {
+      problems.push('Stránka nemá žádný hlavní obsah (<main> nebo role="main").');
+    } else if (mains.length > 1) {
+      let visibleMains = 0;
+      mains.forEach((m: any) => {
+         // Simple visibility check
+         const win = (globalThis as any).window;
+         const style = win.getComputedStyle(m);
+         if (style.display !== 'none' && style.visibility !== 'hidden' && m.getAttribute('aria-hidden') !== 'true') {
+             visibleMains++;
+         }
+      });
+      if (visibleMains > 1) {
+          problems.push(`Stránka má více než jeden viditelný hlavní obsah (${visibleMains}).`);
+      }
+    }
+
+    return { problems };
+  });
+
+  if (info.problems.length === 0) {
+    return null;
+  }
 
   const violation: AccessibilityViolation = {
     id: 'a11yflow-landmarks',
     title: 'Nesprávně definované strukturální oblasti stránky (landmarks)',
-    description: 'Stránka nepoužívá doporučené landmark role (main, navigation, banner, contentinfo) nebo je používá v rozporu s očekáváním.',
+    description: info.problems.join(' '),
     impact,
     helpUrl: LANDMARKS_ACT_RULE_URL,
-    count: 1,
-    suggestedFix: 'Přidejte a upravte landmark role tak, aby stránka měla jednoznačně označený hlavní obsah, navigaci a patičku.',
+    count: info.problems.length,
+    suggestedFix: 'Zajistěte, aby stránka měla právě jeden viditelný element <main> nebo role="main".',
     actRuleIds: [LANDMARKS_ACT_RULE_ID],
     actRuleUrls: [LANDMARKS_ACT_RULE_URL],
     nodes: [],
@@ -51,10 +71,10 @@ export async function runLandmarksActTest(page: Page, pageUrl: string): Promise<
   const actionItem: HumanReadableActionItem = {
     id: violation.id,
     impact,
-    priority: '🟡 Střední',
-    category: 'Struktura',
-    what: 'Struktura stránky není jasně vyznačená pomocí landmark rolí, což komplikuje orientaci uživatelům se čtečkou obrazovky.',
-    fix: 'Označte hlavní obsah role="main" nebo prvkem <main>, navigaci role="navigation" a patičku role="contentinfo". Ujistěte se, že hlavní landmarky nejsou zbytečně duplikované.',
+    priority: '🟡 Moderate',
+    category: 'Structure',
+    what: 'Struktura stránky není jasně vyznačená.',
+    fix: 'Upravte landmark role.',
     exampleUrl: pageUrl,
     wcagReference: '1.3.1 Informace a vztahy',
     actRuleIds: [LANDMARKS_ACT_RULE_ID],

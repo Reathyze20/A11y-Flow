@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A11y Flow Test Scenario</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; height: 2000px; }
+        
+        /* 1. Skip Link */
+        .skip-link {
+            position: absolute; top: -40px; left: 0; background: #000; color: #fff; padding: 8px; z-index: 100;
+            transition: top 0.2s;
+        }
+        .skip-link:focus { top: 0; }
+
+        /* 2. Navigation */
+        nav ul { display: flex; gap: 20px; list-style: none; padding: 0; }
+        nav a { text-decoration: none; color: blue; padding: 5px; }
+
+        /* 3. Visual Jump Section */
+        .jump-container { position: relative; height: 300px; border: 1px solid #ccc; margin: 20px 0; }
+        .btn-1 { position: absolute; top: 20px; left: 20px; }
+        .btn-2 { position: absolute; bottom: 20px; right: 20px; } /* Big jump */
+        .btn-3 { position: absolute; top: 80px; left: 20px; } /* Big jump back */
+
+        /* 4. Focus Trap */
+        .trap-container { border: 2px solid red; padding: 20px; margin: 20px 0; background: #ffebeb; }
+
+        /* 5. No Focus Style */
+        .no-outline { outline: none; border: 1px solid #999; padding: 10px; background: #eee; }
+        .no-outline:focus { background: #ddd; } /* Only background change, no outline */
+
+        /* 6. Modal */
+        .modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 30px; border: 1px solid #000; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 1000; width: 300px;
+        }
+        .modal[aria-modal="true"] { display: block; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .overlay.open { display: block; }
+
+    </style>
+</head>
+<body>
+    <!-- 1. Skip Link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <header>
+        <h1>Accessibility Test Page</h1>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main">
+        <section>
+            <h2>1. Visual Focus Jumps</h2>
+            <p>Tab order goes: Button 1 -> Button 2 (Right) -> Button 3 (Left)</p>
+            <div class="jump-container">
+                <button class="btn-1">Button 1 (Start)</button>
+                <button class="btn-2">Button 2 (Far Right)</button>
+                <button class="btn-3">Button 3 (Back Left)</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>2. Missing Focus Styles</h2>
+            <button class="no-outline">I have no focus outline!</button>
+        </section>
+
+        <section>
+            <h2>3. Focus Trap</h2>
+            <div class="trap-container" id="trap">
+                <h3>Focus Trap Zone</h3>
+                <p>Once you enter, you cannot leave (simulated loop).</p>
+                <input type="text" id="trap-1" placeholder="Trap Input 1">
+                <input type="text" id="trap-2" placeholder="Trap Input 2">
+                <input type="text" id="trap-3" placeholder="Trap Input 3">
+            </div>
+        </section>
+
+        <section>
+            <h2>4. Modal (Focus Bleed)</h2>
+            <button id="open-modal">Open Modal</button>
+            
+            <div class="overlay" id="overlay"></div>
+            <div class="modal" id="modal" role="dialog" aria-labelledby="modal-title">
+                <h3 id="modal-title">Test Modal</h3>
+                <p>This modal does NOT trap focus correctly.</p>
+                <input type="text" placeholder="Modal Input">
+                <button id="close-modal">Close</button>
+            </div>
+        </section>
+        
+        <section style="margin-top: 50px;">
+             <h2>5. Footer Links</h2>
+             <a href="#">Footer Link 1</a>
+             <a href="#">Footer Link 2</a>
+        </section>
+    </main>
+
+    <script>
+        // Focus Trap Logic
+        const trapInputs = [document.getElementById('trap-1'), document.getElementById('trap-2'), document.getElementById('trap-3')];
+        trapInputs[2].addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                trapInputs[0].focus();
+            }
+        });
+        trapInputs[0].addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                trapInputs[2].focus();
+            }
+        });
+
+        // Modal Logic
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('overlay');
+        const openBtn = document.getElementById('open-modal');
+        const closeBtn = document.getElementById('close-modal');
+
+        openBtn.addEventListener('click', () => {
+            modal.setAttribute('aria-modal', 'true');
+            overlay.classList.add('open');
+            modal.querySelector('input').focus();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.removeAttribute('aria-modal');
+            overlay.classList.remove('open');
+            openBtn.focus();
+        });
+    </script>
+</body>
+</html>

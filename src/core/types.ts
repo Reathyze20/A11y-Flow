@@ -6,19 +6,19 @@ export type ImpactLevel = 'minor' | 'moderate' | 'serious' | 'critical';
 
 // Lidsky čitelné priority pro manažerský report
 export type HumanReadablePriority =
-  | '🔴 Kritická'
-  | '🟠 Vysoká'
-  | '🟡 Střední'
-  | '🔵 Nízká';
+  | '🔴 Critical'
+  | '🟠 Serious'
+  | '🟡 Moderate'
+  | '🔵 Minor';
 
 // Vysokoúrovňové kategorie problémů
 export type HumanReadableCategory =
-  | 'Grafika'
-  | 'Formuláře'
-  | 'Text a obsah'
-  | 'Navigace'
-  | 'Struktura'
-  | 'Technické';
+  | 'Graphics'
+  | 'Forms'
+  | 'Content'
+  | 'Navigation'
+  | 'Structure'
+  | 'Technical';
 
 export interface ViolationNode {
   html: string;
@@ -33,6 +33,12 @@ export interface ViolationNode {
   fingerprint?: string;
   // Heuristický název komponenty / design‑system prvku (např. PrimaryButton)
   componentName?: string;
+  // Bounding box prvku na stránce (pro screenshot annotator)
+  boundingBox?: { x: number; y: number; width: number; height: number };
+  // Číslo anotace na screenshotu (pro reference v reportu)
+  annotationNumber?: number;
+  // Impact level tohoto konkrétního node (pro color-coding v annotaci)
+  impact?: ImpactLevel;
 }
 
 export interface AccessibilityViolation {
@@ -47,6 +53,14 @@ export interface AccessibilityViolation {
   // Volitelná vazba na W3C ACT Rule(s), pokud ji umíme z axe-core nebo custom testu odvodit
   actRuleIds?: string[];
   actRuleUrls?: string[];
+}
+
+// Snippet s ukázkou opravy kódu
+export interface CodeSnippet {
+  before: string;  // Špatný kód
+  after: string;   // Opravený kód
+  language: string; // 'html', 'css', 'javascript'
+  explanation: string; // Vysvětlení co je špatně a proč
 }
 
 // Jeden konkrétní úkol do To‑Do listu
@@ -71,6 +85,8 @@ export interface HumanReadableActionItem {
    fingerprint?: string;
    // Heuristický název komponenty / design‑system prvku, do které prvek pravděpodobně patří
    componentName?: string;
+   // Konkrétní snippet s ukázkou jak opravit (pro Fix-it Code Snippets feature)
+   codeSnippet?: CodeSnippet;
 }
 
 export interface HumanReadableReport {
@@ -136,10 +152,38 @@ export interface KeyboardNavigationReport {
   issues: KeyboardNavigationIssue[];
 }
 
+// Heading structure pro kontrolu hierarchie nadpisů
+export interface HeadingInfo {
+  level: number; // 1-6 (h1-h6)
+  text: string;
+  selector?: string;
+}
+
+export interface HeadingStructure {
+  headings: HeadingInfo[];
+  issues: {
+    type: 'missing-h1' | 'multiple-h1' | 'skipped-level' | 'empty-heading' | 
+          'first-not-h1' | 'duplicate-headings' | 'generic-heading' | 'very-long-heading' | 'very-short-heading';
+    description: string;
+    wcagReference?: string;
+    affectedHeadings?: HeadingInfo[]; // Konkrétní nadpisy, které způsobují problém
+  }[];
+}
+
+export interface PageDimensions {
+  width: number;
+  height: number;
+}
+
 export interface AuditReport {
   url: string;
   timestamp: string;
   score: number;
+  fullPageScreenshot?: string; // Base64 encoded JPEG
+  annotatedScreenshot?: string; // Base64 encoded JPEG s anotacemi (červené boxy)
+  annotatedScreenshotUrl?: string; // S3 URL pro annotated screenshot
+  htmlSnapshot?: string; // Full DOM HTML
+  pageDimensions?: PageDimensions;
   meta: {
     browserVersion: string;
     engineVersion: string;
@@ -162,6 +206,16 @@ export interface AuditReport {
   performance?: PerformanceReport;
   // Volitelný blok s výsledkem klávesnicové navigace
   keyboardNavigation?: KeyboardNavigationReport;
+  // Struktura nadpisů na stránce
+  headingStructure?: HeadingStructure;
+  // Auto-generované prohlášení o přístupnosti (Markdown)
+  accessibilityStatement?: string;
+  // Auto-generované prohlášení o přístupnosti (HTML)
+  accessibilityStatementHtml?: string;
+  // URL ke stažení PDF verze reportu (pokud vygenerován)
+  pdfUrl?: string;
+  // Hash domény pro badge lookup
+  domainHash?: string;
 }
 
 export interface CrawlSummary {

@@ -70,7 +70,15 @@ export const ActRuleRegistry: ActRuleDescriptor[] = [
     wcag: ['3.3.1', '3.3.3'],
     status: 'custom',
     customTests: ['form-errors'],
-    notes: 'Chování chyb formuláře testuje runFormErrorsActTest.',
+    notes: 'Chování chyb formuláře testuje runFormErrorsActTest s dynamickým submit testem.',
+  },
+  {
+    id: 'suspicious-alt-placeholder',
+    name: 'Image alt text is meaningful',
+    wcag: ['1.1.1'],
+    status: 'custom',
+    customTests: ['suspicious-alt'],
+    notes: 'Heuristická detekce nesmyslných alt textů (názvy souborů, placeholdery, redundantní fráze).',
   },
 ];
 
