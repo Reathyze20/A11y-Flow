@@ -1,0 +1,90 @@
+name: Accessibility Check
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  a11y-diff:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install a11y-flow
+        run: npm install -g a11y-flow
+      
+      # Scan PR preview (adjust URL based on your deployment)
+      - name: Scan PR Preview
+        run: |
+          a11y-flow scan ${{ env.PREVIEW_URL }} \
+            --output pr-scan.json \
+            --format json
+        env:
+          # Replace with your preview URL
+          # For Vercel: https://your-app-${{ github.event.pull_request.head.sha }}.vercel.app
+          # For Netlify: https://deploy-preview-${{ github.event.number }}--your-app.netlify.app
+          PREVIEW_URL: https://preview-${{ github.event.pull_request.number }}.example.com
+      
+      # Scan production baseline
+      - name: Scan Production
+        run: |
+          a11y-flow scan https://your-production-site.com \
+            --output main-scan.json \
+            --format json
+      
+      # Compare scans
+      - name: Generate Diff Report
+        run: |
+          a11y-flow diff main-scan.json pr-scan.json \
+            --output diff-report.md \
+            --format markdown \
+            --report-url "https://artifacts.example.com/${{ github.sha }}/pr-scan.html"
+      
+      # Generate HTML report for artifacts
+      - name: Generate HTML Report
+        if: always()
+        run: |
+          a11y-flow report pr-scan.json --output pr-report.html
+      
+      # Upload artifacts
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-reports
+          path: |
+            pr-scan.json
+            main-scan.json
+            pr-report.html
+            diff-report.md
+      
+      # Comment on PR
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('diff-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: diff
+            });
+      
+      # Fail if regressions detected
+      - name: Check for Regressions
+        run: |
+          a11y-flow diff main-scan.json pr-scan.json \
+            --max-new-issues 0 \
+            --max-critical 0 \
+            --exit-code

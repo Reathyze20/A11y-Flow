@@ -18,6 +18,8 @@ import { URL } from 'url';
 
 import { AxePuppeteer } from '@axe-core/puppeteer';
 import { runCustomActSuite } from './acts/CustomActSuite';
+import { SPAHandler } from './SPAHandler';
+import { ShadowDOMScanner } from './ShadowDOMScanner';
 
 export type ScanDevice =
   | 'desktop'
@@ -51,13 +53,46 @@ export class WebScanner {
 
     try {
       const page = await this.preparePage(options);
+      const scanStartTime = Date.now();
 
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
       await this.handleCookieConsent(page);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Collect SPA metadata
+      const spaStartTime = Date.now();
+      const detectedFramework = await SPAHandler.detectFramework(page);
+      const hasClientSideRouting = await SPAHandler.hasClientSideRouting(page);
+      
+      // Wait for SPA framework to be ready
+      await SPAHandler.waitForSPAReady(page, 'auto', 10000);
+      const hydrationTime = Date.now() - spaStartTime;
+      
+      // Collect Shadow DOM metadata
+      const hasShadowDOM = await ShadowDOMScanner.hasShadowDOM(page);
+      let shadowHostCount = 0;
+      let closedShadowRoots = 0;
+      let webComponents: string[] = [];
+      
+      if (hasShadowDOM) {
+        console.log('[WebScanner] Shadow DOM detected, preparing for scan');
+        const hosts = await ShadowDOMScanner.getShadowHosts(page);
+        shadowHostCount = hosts.length;
+        closedShadowRoots = hosts.filter(h => h.shadowRootMode === 'closed').length;
+        webComponents = await ShadowDOMScanner.detectWebComponents(page);
+        
+        await ShadowDOMScanner.injectAxeIntoShadowRoots(page);
+        await ShadowDOMScanner.ensureShadowRootsAccessible(page);
+      }
+      
+      // Wait for lazy-loaded content
+      await SPAHandler.waitForLazyContent(page, 5000);
+      const stabilityTime = Date.now() - scanStartTime;
 
       const performanceReport = await this.collectPerformanceReportSafe(page);
+      
+      // Explore dynamic states (including SPA-specific states)
       await this.exploreDynamicStatesSafe(page);
+      await SPAHandler.exploreDynamicStates(page);
       const keyboardReport = await this.runKeyboardAuditSafe(page);
 
       const report = await this.runAxeAndMap(url, page);
@@ -100,6 +135,26 @@ export class WebScanner {
       const statement = statementGenerator.generate(report, 'cs'); // Default to Czech
       report.accessibilityStatement = statement.markdown;
       report.accessibilityStatementHtml = statement.html;
+
+      // Add SPA metadata if framework detected or routing found
+      if (detectedFramework || hasClientSideRouting) {
+        report.spaMetadata = {
+          detectedFramework: detectedFramework || 'unknown',
+          hasClientSideRouting,
+          hydrationTime,
+          stabilityTime,
+        };
+      }
+      
+      // Add Shadow DOM metadata if detected
+      if (hasShadowDOM) {
+        report.shadowDOMMetadata = {
+          hasShadowDOM: true,
+          shadowHostCount,
+          closedShadowRoots,
+          webComponents,
+        };
+      }
 
       // await this.enrichViolationsWithScreenshots(page, violationsToCapture);
 
@@ -406,6 +461,8 @@ export class WebScanner {
   private async runAxeAndMap(url: string, page: Page): Promise<AuditReport> {
     console.log(`[WebScanner] Running Axe analysis on ${url}...`);
 
+    // Configure axe-core - Shadow DOM scanning is enabled by default in axe-core 4.8+
+    // Just need to ensure we're using proper selectors
     const results = await new AxePuppeteer(page)
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'])
       .analyze();

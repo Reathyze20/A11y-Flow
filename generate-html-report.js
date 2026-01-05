@@ -320,14 +320,66 @@ function buildActSummaryHtml(items) {
         return `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer">${label}</a> (${count}×)`;
       }
       return `${label} (${count}×)`;
-    })
-    .join(', ');
+    });
 
   return `
     <div class="summary-item">
-      <div class="summary-label">ACT pravidla (top)</div>
-      <div class="summary-value">${byAct.size}</div>
-      <div class="muted">Nejčastější ACT pravidla: ${top || '-'}</div>
+      <div class="summary-label">ACT Rules</div>
+      <div class="summary-value">${byAct.size} pravidel</div>
+      <div class="muted">Nejčastější: ${top.join(', ')}</div>
+    </div>`;
+}
+
+function buildSPAMetadataHtml(report) {
+  const spa = report.spaMetadata;
+  if (!spa) return '';
+
+  const frameworkIcons = {
+    react: '⚛️',
+    vue: '💚',
+    angular: '🅰️',
+    unknown: '🚀'
+  };
+
+  const icon = frameworkIcons[spa.detectedFramework] || '🚀';
+  const frameworkName = (spa.detectedFramework || 'Unknown').charAt(0).toUpperCase() + 
+                        (spa.detectedFramework || 'Unknown').slice(1);
+  
+  const routingBadge = spa.hasClientSideRouting ? 
+    '<span class="badge badge-success">Client-side routing</span>' : 
+    '<span class="badge badge-neutral">Static</span>';
+  
+  const hydrationMs = spa.hydrationTime != null ? formatMs(spa.hydrationTime) : '-';
+  const stabilityMs = spa.stabilityTime != null ? formatMs(spa.stabilityTime) : '-';
+
+  return `
+    <div class="summary-item">
+      <div class="summary-label">${icon} SPA Framework</div>
+      <div class="summary-value">${escapeHtml(frameworkName)}</div>
+      <div class="muted">${routingBadge}</div>
+      <div class="muted">Hydration: ${hydrationMs} · Stability: ${stabilityMs}</div>
+    </div>`;
+}
+
+function buildShadowDOMMetadataHtml(report) {
+  const shadow = report.shadowDOMMetadata;
+  if (!shadow || !shadow.hasShadowDOM) return '';
+
+  const componentsCount = shadow.webComponents ? shadow.webComponents.length : 0;
+  const closedWarning = shadow.closedShadowRoots > 0 ? 
+    `<span class="badge badge-warning">${shadow.closedShadowRoots} closed</span>` : '';
+  
+  const componentsList = shadow.webComponents && shadow.webComponents.length > 0 ?
+    shadow.webComponents.slice(0, 5).map(c => `&lt;${escapeHtml(c)}&gt;`).join(', ') +
+    (shadow.webComponents.length > 5 ? ` +${shadow.webComponents.length - 5} more` : '') :
+    'None detected';
+
+  return `
+    <div class="summary-item">
+      <div class="summary-label">🎯 Shadow DOM</div>
+      <div class="summary-value">${shadow.shadowHostCount} shadow roots</div>
+      <div class="muted">${componentsCount} web components ${closedWarning}</div>
+      <div class="muted" style="font-size: 0.85em;">${componentsList}</div>
     </div>`;
 }
 
@@ -832,6 +884,11 @@ const outputHtml = `<!DOCTYPE html>
     .priority-low { color: #1976d2; }
 
     .pill { display: inline-block; padding: 2px 6px; border-radius: 999px; background: #eef2ff; font-size: 11px; color: #3949ab; }
+    
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .badge-success { background: #e8f5e9; color: #2e7d32; }
+    .badge-warning { background: #fff3e0; color: #ef6c00; }
+    .badge-neutral { background: #f5f5f5; color: #666; }
 
     .muted { color: #777; font-size: 12px; }
     a { color: #1565c0; text-decoration: none; }
@@ -880,6 +937,8 @@ const outputHtml = `<!DOCTYPE html>
       ${buildExecutiveStatusHtml(data)}
       ${buildWcagLevelSummaryHtml(aggregatedItems)}
       ${buildActSummaryHtml(aggregatedItems)}
+      ${buildSPAMetadataHtml(data)}
+      ${buildShadowDOMMetadataHtml(data)}
       <div class="summary-item">
         <div class="summary-label">URL</div>
         <div class="summary-value">${escapeHtml(data.url || '')}</div>

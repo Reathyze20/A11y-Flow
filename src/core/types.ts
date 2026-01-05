@@ -216,6 +216,21 @@ export interface AuditReport {
   pdfUrl?: string;
   // Hash domény pro badge lookup
   domainHash?: string;
+  
+  // SPA & Shadow DOM metadata (pokud detekováno)
+  spaMetadata?: {
+    detectedFramework?: 'react' | 'vue' | 'angular' | 'unknown';
+    hasClientSideRouting: boolean;
+    hydrationTime?: number; // ms
+    stabilityTime?: number; // ms
+  };
+  
+  shadowDOMMetadata?: {
+    hasShadowDOM: boolean;
+    shadowHostCount: number;
+    closedShadowRoots: number;
+    webComponents: string[]; // List of custom element names
+  };
 }
 
 export interface CrawlSummary {

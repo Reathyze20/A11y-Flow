@@ -1,0 +1,34 @@
+{
+  "url": "http://test.com",
+  "timestamp": "2026-01-04T16:39:27.084Z",
+  "score": 85,
+  "violations": {
+    "critical": [],
+    "serious": [],
+    "moderate": [],
+    "minor": []
+  },
+  "stats": {
+    "totalViolations": 12,
+    "criticalCount": 2
+  },
+  "humanReadable": {
+    "actionItems": []
+  },
+  "spaMetadata": {
+    "detectedFramework": "react",
+    "hasClientSideRouting": true,
+    "hydrationTime": 450,
+    "stabilityTime": 823
+  },
+  "shadowDOMMetadata": {
+    "hasShadowDOM": true,
+    "shadowHostCount": 5,
+    "closedShadowRoots": 1,
+    "webComponents": [
+      "custom-button",
+      "custom-card",
+      "custom-form"
+    ]
+  }
+}

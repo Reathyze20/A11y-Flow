@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow DOM Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { color: #333; }
+    .component { 
+      margin: 20px 0;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shadow DOM Accessibility Test</h1>
+  <p>This page tests accessibility scanning in Shadow DOM environments.</p>
+
+  <div class="component">
+    <h2>Component 1: Custom Button (Shadow DOM)</h2>
+    <custom-button></custom-button>
+  </div>
+
+  <div class="component">
+    <h2>Component 2: Custom Card (Nested Shadow DOM)</h2>
+    <custom-card></custom-card>
+  </div>
+
+  <div class="component">
+    <h2>Component 3: Form in Shadow DOM</h2>
+    <custom-form></custom-form>
+  </div>
+
+  <script>
+    // Custom Button Component (with accessibility issues)
+    class CustomButton extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        // ❌ Issue: No accessible label
+        // ❌ Issue: Poor color contrast
+        this.shadowRoot.innerHTML = `
+          <style>
+            button {
+              background: #ffcc00;
+              color: #ffee88;
+              border: none;
+              padding: 10px 20px;
+              cursor: pointer;
+              font-size: 16px;
+            }
+          </style>
+          <button>Click me</button>
+        `;
+      }
+    }
+
+    // Custom Card Component (nested shadow DOM)
+    class CustomCard extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        // ❌ Issue: Image without alt text
+        // ❌ Issue: Missing heading structure
+        this.shadowRoot.innerHTML = `
+          <style>
+            .card {
+              border: 1px solid #ccc;
+              padding: 15px;
+              background: white;
+            }
+            img {
+              width: 100%;
+              height: 200px;
+              object-fit: cover;
+            }
+          </style>
+          <div class="card">
+            <img src="https://via.placeholder.com/400x200">
+            <div class="title">Card Title</div>
+            <p>This is card content in shadow DOM.</p>
+            <custom-nested-button></custom-nested-button>
+          </div>
+        `;
+
+        // Define nested component
+        if (!customElements.get('custom-nested-button')) {
+          class CustomNestedButton extends HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({ mode: 'open' });
+            }
+
+            connectedCallback() {
+              // ❌ Issue: Button without label
+              this.shadowRoot.innerHTML = `
+                <style>
+                  button {
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                  }
+                </style>
+                <button onclick="alert('Clicked!')">
+                  <span>⚡</span>
+                </button>
+              `;
+            }
+          }
+          customElements.define('custom-nested-button', CustomNestedButton);
+        }
+
+        // Wait for definition then render
+        customElements.whenDefined('custom-nested-button').then(() => {
+          const btn = document.createElement('custom-nested-button');
+          this.shadowRoot.querySelector('.card').appendChild(btn);
+        });
+      }
+    }
+
+    // Custom Form Component
+    class CustomForm extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        // ❌ Issue: Input without label
+        // ❌ Issue: No form validation feedback
+        // ❌ Issue: Missing required indicator
+        this.shadowRoot.innerHTML = `
+          <style>
+            form {
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            }
+            input {
+              padding: 8px;
+              border: 1px solid #ccc;
+            }
+            button {
+              padding: 10px;
+              background: #28a745;
+              color: white;
+              border: none;
+              cursor: pointer;
+            }
+          </style>
+          <form>
+            <input type="text" placeholder="Enter your name" required>
+            <input type="email" placeholder="Enter your email" required>
+            <button type="submit">Submit</button>
+          </form>
+        `;
+
+        // Add form handler
+        this.shadowRoot.querySelector('form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Form submitted!');
+        });
+      }
+    }
+
+    // Register components
+    customElements.define('custom-button', CustomButton);
+    customElements.define('custom-card', CustomCard);
+    customElements.define('custom-form', CustomForm);
+  </script>
+</body>
+</html>

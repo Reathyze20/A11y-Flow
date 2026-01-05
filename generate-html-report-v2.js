@@ -22,6 +22,7 @@ const generateSinglePageSummary = require('./report-modules/summary-single');
 const generateCrawlSummary = require('./report-modules/summary-crawl');
 const generatePerformance = require('./report-modules/performance');
 const generateHeadingStructure = require('./report-modules/heading-structure');
+const generateTechMetadata = require('./report-modules/tech-metadata');
 const getScripts = require('./report-modules/scripts');
 const { generatePageModal, generateModalScripts } = require('./report-modules/page-modal');
 
@@ -118,6 +119,8 @@ const summaryHtml = isCrawl
   ? generateCrawlSummary(data)
   : generateSinglePageSummary(data, stats);
 
+const techMetadataHtml = generateTechMetadata(data);
+
 const performanceHtml = `
   <section id="tab-performance" class="hidden">
     ${generatePerformance(data, isCrawl)}
@@ -168,6 +171,7 @@ const html = `<!DOCTYPE html>
     
     <div id="content-area">
       ${summaryHtml}
+      ${techMetadataHtml}
       ${performanceHtml}
       ${structureHtml}
     </div>

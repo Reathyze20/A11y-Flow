@@ -10,16 +10,36 @@
     "clean": "rimraf dist",
     "build": "node src/scripts/build.js",
     "deploy": "node src/scripts/deploy.js",
-    "report:html": "node generate-html-report.js",
+    "report:html": "node generate-html-report-v2.js",
     "init-db": "node src/scripts/init-db.js",
     "init-aws": "node src/scripts/init-aws.js",
     "init-api": "node src/scripts/init-api.js",
     "set-stripe-secret": "node src/scripts/set-stripe-secret.js",
     "verify-rules": "npx ts-node src/scripts/verify-act-rules.ts"
   },
-  "keywords": [],
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "testing",
+    "audit",
+    "axe",
+    "puppeteer",
+    "ci-cd",
+    "github-actions",
+    "diff",
+    "regression-testing"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/a11y-flow"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/a11y-flow/issues"
+  },
+  "homepage": "https://github.com/yourusername/a11y-flow#readme",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.130",
     "@types/jest": "^29.5.11",
@@ -33,6 +53,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "commander": "^11.1.0",
     "@aws-sdk/client-apigatewayv2": "^3.485.0",
     "@aws-sdk/client-dynamodb": "^3.485.0",
     "@aws-sdk/client-iam": "^3.485.0",

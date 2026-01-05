@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPA Test Page - React Simulation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 5px;
+    }
+    .nav button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .nav button.active {
+      background: #0056b3;
+    }
+    .content {
+      min-height: 400px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    .card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .lazy-img {
+      width: 100%;
+      height: 200px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <h1>SPA Test Application</h1>
+    <nav class="nav" role="navigation">
+      <button data-route="home" class="active">Home</button>
+      <button data-route="products">Products</button>
+      <button data-route="about">About</button>
+      <button data-route="contact">Contact</button>
+    </nav>
+    <main class="content" role="main">
+      <div class="loading">Loading...</div>
+    </main>
+  </div>
+
+  <script>
+    // Simulate React presence
+    window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = { isDisabled: false };
+    
+    // SPA Router Simulation
+    class SPARouter {
+      constructor() {
+        this.routes = {
+          home: this.renderHome,
+          products: this.renderProducts,
+          about: this.renderAbout,
+          contact: this.renderContact,
+        };
+        this.currentRoute = 'home';
+        this.init();
+      }
+
+      init() {
+        // Setup navigation
+        document.querySelectorAll('[data-route]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const route = e.target.getAttribute('data-route');
+            this.navigate(route);
+          });
+        });
+
+        // Initial render
+        setTimeout(() => this.render(), 500);
+      }
+
+      navigate(route) {
+        if (this.routes[route]) {
+          this.currentRoute = route;
+          
+          // Update active button
+          document.querySelectorAll('[data-route]').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-route') === route);
+          });
+
+          // Show loading state
+          const content = document.querySelector('.content');
+          content.innerHTML = '<div class="loading">Loading...</div>';
+
+          // Simulate API call and hydration delay
+          setTimeout(() => this.render(), 300 + Math.random() * 400);
+        }
+      }
+
+      render() {
+        const content = document.querySelector('.content');
+        const renderFn = this.routes[this.currentRoute];
+        if (renderFn) {
+          content.innerHTML = renderFn.call(this);
+          this.triggerHydration();
+        }
+      }
+
+      triggerHydration() {
+        // Simulate React hydration
+        if (window.requestIdleCallback) {
+          window.requestIdleCallback(() => {
+            console.log('[SPA] Hydration complete');
+          });
+        }
+
+        // Trigger lazy loading
+        this.loadLazyImages();
+      }
+
+      loadLazyImages() {
+        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+        lazyImages.forEach(img => {
+          // Simulate lazy loading delay
+          setTimeout(() => {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+          }, 200);
+        });
+      }
+
+      // Route render functions
+      renderHome() {
+        // ❌ Issue: Missing h1
+        // ❌ Issue: Missing ARIA labels
+        return `
+          <div>
+            <div style="font-size: 24px; font-weight: bold;">Welcome to Our SPA</div>
+            <p>This is a simulated Single Page Application to test a11y scanning.</p>
+            <div class="card">
+              <h2>Featured Content</h2>
+              <p>Dynamic content loaded via JavaScript.</p>
+              <button>Learn More</button>
+            </div>
+          </div>
+        `;
+      }
+
+      renderProducts() {
+        // ❌ Issue: Images without alt text
+        // ❌ Issue: Poor heading structure
+        return `
+          <div>
+            <h2>Our Products</h2>
+            <div class="card">
+              <div style="font-size: 18px; font-weight: bold;">Product 1</div>
+              <img loading="lazy" data-src="https://via.placeholder.com/400x200" class="lazy-img" alt="">
+              <p>Description of product 1</p>
+              <button>Add to Cart</button>
+            </div>
+            <div class="card">
+              <div style="font-size: 18px; font-weight: bold;">Product 2</div>
+              <img loading="lazy" data-src="https://via.placeholder.com/400x200" class="lazy-img">
+              <p>Description of product 2</p>
+              <button>Add to Cart</button>
+            </div>
+            <div class="card">
+              <div style="font-size: 18px; font-weight: bold;">Product 3</div>
+              <img loading="lazy" data-src="https://via.placeholder.com/400x200" class="lazy-img" alt="">
+              <p>Description of product 3</p>
+              <button>Add to Cart</button>
+            </div>
+          </div>
+        `;
+      }
+
+      renderAbout() {
+        // ❌ Issue: Empty links
+        // ❌ Issue: Missing landmark roles
+        return `
+          <div>
+            <h2>About Us</h2>
+            <p>We are a company focused on accessibility.</p>
+            <div class="card">
+              <h3>Our Mission</h3>
+              <p>Making the web accessible for everyone.</p>
+            </div>
+            <div class="card">
+              <h3>Our Team</h3>
+              <ul>
+                <li><a href="#"></a></li>
+                <li><a href="#">Team Member 2</a></li>
+                <li><a href="#" style="color: #ddd;">Team Member 3</a></li>
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+
+      renderContact() {
+        // ❌ Issue: Form inputs without labels
+        // ❌ Issue: Missing error handling
+        return `
+          <div>
+            <h2>Contact Us</h2>
+            <form id="contact-form">
+              <div class="card">
+                <input type="text" placeholder="Name" required>
+              </div>
+              <div class="card">
+                <input type="email" placeholder="Email" required>
+              </div>
+              <div class="card">
+                <textarea placeholder="Message" rows="4" required></textarea>
+              </div>
+              <button type="submit">Send Message</button>
+            </form>
+          </div>
+        `;
+      }
+    }
+
+    // Initialize SPA
+    const router = new SPARouter();
+
+    // Add form handler after navigation
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.addEventListener('submit', (e) => {
+        if (e.target.id === 'contact-form') {
+          e.preventDefault();
+          alert('Form submitted!');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

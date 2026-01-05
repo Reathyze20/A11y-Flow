@@ -9,6 +9,13 @@ import { AuditReport, CrawlSummary } from './core/types';
 // Export WebScanner pro externí použití
 export { WebScanner, ScanDevice } from './core/WebScanner';
 
+// Export Differ for CLI and programmatic use
+export { AccessibilityDiffer } from './core/Differ';
+export type { DiffResult } from './core/Differ';
+
+// Export types
+export type { AuditReport, CrawlSummary } from './core/types';
+
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
   const headers = {
     'Content-Type': 'application/json',

@@ -16,6 +16,8 @@ This directory contains HTML pages designed to trigger specific accessibility ru
 | `modal.html` | `ModalFocus` | Dialogs (`role="dialog"`) without `aria-modal="true"`. |
 | `orientation.html` | `OrientationLock` | CSS media queries locking orientation. |
 | `skip-link.html` | `SkipLink` | Missing "Skip to main content" link at the top of the page. |
+| `shadow-dom.html` | Shadow DOM scanning | Web components with accessibility issues in shadow roots. |
+| `spa.html` | SPA hydration | Single Page Application with dynamic content and routing. |
 
 ## How to Run
 
